@@ -1,0 +1,42 @@
+[project]
+name = "math-mcp-server"
+version = "0.1.0"
+description = "A simple MCP server for mathematical operations - Learning project demonstrating MCP fundamentals"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "Slalom Platform Engineering", email = "platform@slalom.com"}
+]
+keywords = ["mcp", "math", "calculator", "learning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "mcp>=1.14.1",
+    "pydantic>=2.11.9",
+]
+
+[project.scripts]
+math-mcp-server = "math_mcp.server:main"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "mypy>=1.18.2",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "ruff>=0.13.1",
+]
