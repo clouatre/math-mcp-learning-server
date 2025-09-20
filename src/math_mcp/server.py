@@ -5,8 +5,8 @@ Educational MCP server demonstrating all three MCP pillars: Tools, Resources, an
 Uses official FastMCP patterns with structured output and multi-transport support.
 """
 
+import logging
 import math
-import statistics
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -94,9 +94,15 @@ def safe_eval_expression(expression: str) -> float:
     allowed_chars = set("0123456789+-*/.()e")
     allowed_functions = {"sin", "cos", "tan", "log", "sqrt", "abs", "pow"}
 
+    # Security check - log and block dangerous patterns
+    dangerous_patterns = ["import", "exec", "__", "eval", "open", "file"]
+    if any(pattern in clean_expr.lower() for pattern in dangerous_patterns):
+        logging.warning(f"Security: Blocked unsafe expression attempt: {expression[:50]}...")
+        raise ValueError("Expression contains forbidden operations. Only mathematical expressions are allowed.")
+
     # Check for unsafe characters
     if not all(c in allowed_chars or c.isalpha() for c in clean_expr):
-        raise ValueError("Expression contains invalid characters")
+        raise ValueError("Expression contains invalid characters. Use only numbers, +, -, *, /, (), and math functions.")
 
     # Replace math functions with safe alternatives
     safe_expr = clean_expr
@@ -110,8 +116,16 @@ def safe_eval_expression(expression: str) -> float:
         allowed_globals = {"__builtins__": {"abs": abs}, "math": math}
         result = eval(safe_expr, allowed_globals, {})
         return float(result)
+    except ZeroDivisionError:
+        raise ValueError("Mathematical error: Division by zero is undefined.")
+    except OverflowError:
+        raise ValueError("Mathematical error: Result is too large to compute.")
+    except ValueError as e:
+        if "math domain error" in str(e):
+            raise ValueError("Mathematical error: Invalid input for function (e.g., sqrt of negative number).")
+        raise ValueError(f"Mathematical expression error: {str(e)}")
     except Exception as e:
-        raise ValueError(f"Invalid expression: {str(e)}")
+        raise ValueError(f"Expression evaluation failed: {str(e)}")
 
 
 def convert_temperature(value: float, from_unit: str, to_unit: str) -> float:
@@ -135,11 +149,28 @@ def convert_temperature(value: float, from_unit: str, to_unit: str) -> float:
 
 # === TOOLS: COMPUTATIONAL OPERATIONS ===
 
+def _classify_expression_difficulty(expression: str) -> str:
+    """Classify mathematical expression difficulty for educational annotations."""
+    clean_expr = expression.replace(" ", "").lower()
+
+    # Count complexity indicators
+    has_functions = any(func in clean_expr for func in ["sin", "cos", "tan", "log", "sqrt", "pow"])
+    has_parentheses = "(" in clean_expr
+    has_exponents = "**" in clean_expr or "^" in clean_expr
+    operator_count = sum(clean_expr.count(op) for op in "+-*/")
+
+    if has_functions or has_exponents:
+        return "advanced"
+    elif has_parentheses or operator_count > 2:
+        return "intermediate"
+    else:
+        return "basic"
+
 @mcp.tool()
 def calculate(
     expression: str,
     ctx: Context[ServerSession, AppContext]
-) -> CalculationResult:
+):
     """Safely evaluate mathematical expressions with support for basic operations and math functions.
 
     Supported operations: +, -, *, /, **, ()
@@ -152,6 +183,7 @@ def calculate(
     """
     result = safe_eval_expression(expression)
     timestamp = datetime.now().isoformat()
+    difficulty = _classify_expression_difficulty(expression)
 
     # Add to calculation history
     history_entry = {
@@ -162,18 +194,27 @@ def calculate(
     }
     ctx.request_context.lifespan_context.calculation_history.append(history_entry)
 
-    return CalculationResult(
-        expression=expression,
-        result=result,
-        timestamp=timestamp
-    )
+    # Return content with educational annotations
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": f"**Calculation:** {expression} = {result}",
+                "annotations": {
+                    "difficulty": difficulty,
+                    "topic": "arithmetic",
+                    "timestamp": timestamp
+                }
+            }
+        ]
+    }
 
 
 @mcp.tool()
 def statistics(
     numbers: list[float],
     operation: str
-) -> StatisticsResult:
+):
     """Perform statistical calculations on a list of numbers.
 
     Available operations: mean, median, mode, std_dev, variance
@@ -195,13 +236,27 @@ def statistics(
         raise ValueError(f"Unknown operation '{operation}'. Available: {list(operations.keys())}")
 
     result = operations[operation](numbers)
+    # Ensure result is always a float for type safety
+    # Since input is list[float], all results should be convertible to float
+    result_float = float(result)  # type: ignore[arg-type]
 
-    return StatisticsResult(
-        operation=operation,
-        input_data=numbers,
-        result=result,
-        count=len(numbers)
-    )
+    # Determine difficulty based on operation and data size
+    difficulty = "advanced" if operation in ["std_dev", "variance"] else "intermediate" if len(numbers) > 10 else "basic"
+
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": f"**{operation.title()}** of {len(numbers)} numbers: {result_float}",
+                "annotations": {
+                    "difficulty": difficulty,
+                    "topic": "statistics",
+                    "operation": operation,
+                    "sample_size": len(numbers)
+                }
+            }
+        ]
+    }
 
 
 @mcp.tool()
@@ -210,7 +265,7 @@ def compound_interest(
     rate: float,
     time: float,
     compounds_per_year: int = 1
-) -> CompoundInterestResult:
+):
     """Calculate compound interest for investments.
 
     Formula: A = P(1 + r/n)^(nt)
@@ -233,14 +288,20 @@ def compound_interest(
     final_amount = principal * (1 + rate / compounds_per_year) ** (compounds_per_year * time)
     total_interest = final_amount - principal
 
-    return CompoundInterestResult(
-        principal=principal,
-        rate=rate,
-        time=time,
-        compounds_per_year=compounds_per_year,
-        final_amount=final_amount,
-        total_interest=total_interest
-    )
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": f"**Compound Interest Calculation:**\nPrincipal: ${principal:,.2f}\nFinal Amount: ${final_amount:,.2f}\nTotal Interest Earned: ${total_interest:,.2f}",
+                "annotations": {
+                    "difficulty": "intermediate",
+                    "topic": "finance",
+                    "formula": "A = P(1 + r/n)^(nt)",
+                    "time_years": time
+                }
+            }
+        ]
+    }
 
 
 @mcp.tool()
@@ -249,7 +310,7 @@ def convert_units(
     from_unit: str,
     to_unit: str,
     unit_type: str
-) -> UnitConversionResult:
+):
     """Convert between different units of measurement.
 
     Supported unit types:
@@ -287,13 +348,21 @@ def convert_units(
         base_value = value * from_factor
         result = base_value / to_factor
 
-    return UnitConversionResult(
-        original_value=value,
-        original_unit=from_unit,
-        converted_value=result,
-        target_unit=to_unit,
-        conversion_type=unit_type
-    )
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": f"**Unit Conversion:** {value} {from_unit} = {result:.4g} {to_unit}",
+                "annotations": {
+                    "difficulty": "basic",
+                    "topic": "unit_conversion",
+                    "conversion_type": unit_type,
+                    "from_unit": from_unit,
+                    "to_unit": to_unit
+                }
+            }
+        ]
+    }
 
 
 # === RESOURCES: DATA EXPOSURE ===
