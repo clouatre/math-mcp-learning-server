@@ -4,7 +4,6 @@ Test cases for the FastMCP Math Server
 """
 
 import pytest
-import asyncio
 from math_mcp.server import (
     safe_eval_expression,
     convert_temperature,
@@ -12,11 +11,7 @@ from math_mcp.server import (
     statistics as stats_tool,
     compound_interest,
     convert_units,
-    get_math_constant,
-    CalculationResult,
-    StatisticsResult,
-    CompoundInterestResult,
-    UnitConversionResult
+    get_math_constant
 )
 
 
@@ -76,7 +71,7 @@ def test_temperature_conversions():
 # === FASTMCP TOOL TESTS ===
 
 def test_calculate_tool():
-    """Test the calculate tool returns structured output."""
+    """Test the calculate tool returns structured output with annotations."""
     # Mock context for calculation history (tool doesn't actually use it in this test)
     class MockContext:
         def __init__(self):
@@ -93,26 +88,34 @@ def test_calculate_tool():
     ctx = MockContext()
     result = calculate("2 + 3", ctx)
 
-    assert isinstance(result, CalculationResult)
-    assert result.expression == "2 + 3"
-    assert result.result == 5.0
-    assert result.timestamp is not None
+    assert isinstance(result, dict)
+    assert "content" in result
+    assert len(result["content"]) == 1
+    content = result["content"][0]
+    assert content["type"] == "text"
+    assert "2 + 3 = 5.0" in content["text"]
+    assert "annotations" in content
+    assert content["annotations"]["difficulty"] == "basic"
+    assert content["annotations"]["topic"] == "arithmetic"
 
 
 def test_statistics_tool():
     """Test the statistics tool with various operations."""
     # Test mean
     result = stats_tool([1, 2, 3, 4, 5], "mean")
-    assert isinstance(result, StatisticsResult)
-    assert result.operation == "mean"
-    assert result.result == 3.0
-    assert result.count == 5
-    assert result.input_data == [1, 2, 3, 4, 5]
+    assert isinstance(result, dict)
+    assert "content" in result
+    content = result["content"][0]
+    assert "Mean" in content["text"]
+    assert "3.0" in content["text"]
+    assert content["annotations"]["topic"] == "statistics"
+    assert content["annotations"]["operation"] == "mean"
+    assert content["annotations"]["sample_size"] == 5
 
     # Test median
     result = stats_tool([1, 2, 3, 4, 5], "median")
-    assert result.operation == "median"
-    assert result.result == 3.0
+    assert "Median" in result["content"][0]["text"]
+    assert "3.0" in result["content"][0]["text"]
 
     # Test empty list
     with pytest.raises(ValueError, match="Cannot calculate statistics on empty list"):
@@ -127,13 +130,14 @@ def test_compound_interest_tool():
     """Test compound interest calculations."""
     result = compound_interest(1000.0, 0.05, 5.0, 12)
 
-    assert isinstance(result, CompoundInterestResult)
-    assert result.principal == 1000.0
-    assert result.rate == 0.05
-    assert result.time == 5.0
-    assert result.compounds_per_year == 12
-    assert result.final_amount > result.principal
-    assert result.total_interest == result.final_amount - result.principal
+    assert isinstance(result, dict)
+    assert "content" in result
+    content = result["content"][0]
+    assert "Compound Interest Calculation" in content["text"]
+    assert "$1,000.00" in content["text"]
+    assert content["annotations"]["topic"] == "finance"
+    assert content["annotations"]["difficulty"] == "intermediate"
+    assert content["annotations"]["time_years"] == 5.0
 
     # Test validation errors
     with pytest.raises(ValueError, match="Principal must be greater than 0"):
@@ -148,16 +152,18 @@ def test_convert_units_tool():
     # Test length conversion
     result = convert_units(100, "cm", "m", "length")
 
-    assert isinstance(result, UnitConversionResult)
-    assert result.original_value == 100
-    assert result.original_unit == "cm"
-    assert result.converted_value == 1.0
-    assert result.target_unit == "m"
-    assert result.conversion_type == "length"
+    assert isinstance(result, dict)
+    assert "content" in result
+    content = result["content"][0]
+    assert "100 cm = 1 m" in content["text"]
+    assert content["annotations"]["topic"] == "unit_conversion"
+    assert content["annotations"]["conversion_type"] == "length"
+    assert content["annotations"]["from_unit"] == "cm"
+    assert content["annotations"]["to_unit"] == "m"
 
     # Test temperature conversion
     result = convert_units(0, "c", "f", "temperature")
-    assert abs(result.converted_value - 32.0) < 1e-10
+    assert "32" in result["content"][0]["text"]
 
     # Test invalid unit type
     with pytest.raises(ValueError, match="Unknown unit type"):
@@ -216,26 +222,26 @@ def test_statistical_edge_cases():
     """Test statistical functions with edge cases."""
     # Single value
     result = stats_tool([42.0], "mean")
-    assert result.result == 42.0
+    assert "42.0" in result["content"][0]["text"]
 
     # Standard deviation with single value
     result = stats_tool([42.0], "std_dev")
-    assert result.result == 0.0  # Should not raise error
+    assert "0" in result["content"][0]["text"]  # Should not raise error
 
     # Variance with single value
     result = stats_tool([42.0], "variance")
-    assert result.result == 0.0  # Should not raise error
+    assert "0" in result["content"][0]["text"]  # Should not raise error
 
 
 def test_unit_conversion_edge_cases():
     """Test unit conversions with various edge cases."""
     # Convert to same unit
     result = convert_units(100, "m", "m", "length")
-    assert result.converted_value == 100.0
+    assert "100 m = 100 m" in result["content"][0]["text"]
 
     # Test case insensitivity
     result = convert_units(1, "M", "KM", "length")
-    assert abs(result.converted_value - 0.001) < 1e-10
+    assert "0.001" in result["content"][0]["text"]
 
 
 if __name__ == "__main__":
