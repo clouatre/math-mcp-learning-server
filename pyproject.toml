@@ -5,7 +5,7 @@ description = "A simple MCP server for mathematical operations - Learning projec
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
-    {name = "Slalom Platform Engineering", email = "platform@slalom.com"}
+    {name = "Hugues Clouâtre"}
 ]
 keywords = ["mcp", "math", "calculator", "learning"]
 classifiers = [
