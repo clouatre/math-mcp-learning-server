@@ -470,12 +470,13 @@ Make your explanation clear and educational, suitable for someone learning about
 def main():
     """Main entry point supporting multiple transports."""
     import sys
+    from typing import cast, Literal
 
     # Parse command line arguments for transport type
-    transport = "stdio"  # default
+    transport: Literal["stdio", "sse", "streamable-http"] = "stdio"  # default
     if len(sys.argv) > 1:
         if sys.argv[1] in ["stdio", "sse", "streamable-http"]:
-            transport = sys.argv[1]
+            transport = cast(Literal["stdio", "sse", "streamable-http"], sys.argv[1])
 
     # Run with specified transport
     mcp.run(transport=transport)
