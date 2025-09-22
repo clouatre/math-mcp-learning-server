@@ -1,5 +1,5 @@
 [project]
-name = "math-mcp-server"
+name = "math-mcp-learning-server"
 version = "0.1.0"
 description = "A simple MCP server for mathematical operations - Learning project demonstrating MCP fundamentals"
 readme = "README.md"
@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.scripts]
-math-mcp-server = "math_mcp.server:main"
+math-mcp-learning-server = "math_mcp.server:main"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
