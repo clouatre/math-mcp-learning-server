@@ -26,12 +26,12 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/huguesclouatre/math-mcp-server"
-Repository = "https://github.com/huguesclouatre/math-mcp-server"
-Issues = "https://github.com/huguesclouatre/math-mcp-server/issues"
-Documentation = "https://github.com/huguesclouatre/math-mcp-server#readme"
-Contributing = "https://github.com/huguesclouatre/math-mcp-server/blob/main/CONTRIBUTING.md"
-"Future Improvements" = "https://github.com/huguesclouatre/math-mcp-server/blob/main/FUTURE_IMPROVEMENTS.md"
+Homepage = "https://github.com/huguesclouatre/math-mcp-learning-server"
+Repository = "https://github.com/huguesclouatre/math-mcp-learning-server"
+Issues = "https://github.com/huguesclouatre/math-mcp-learning-server/issues"
+Documentation = "https://github.com/huguesclouatre/math-mcp-learning-server#readme"
+Contributing = "https://github.com/huguesclouatre/math-mcp-learning-server/blob/main/CONTRIBUTING.md"
+"Future Improvements" = "https://github.com/huguesclouatre/math-mcp-learning-server/blob/main/FUTURE_IMPROVEMENTS.md"
 
 [project.scripts]
 math-mcp-learning-server = "math_mcp.server:main"

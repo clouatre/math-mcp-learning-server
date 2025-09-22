@@ -21,8 +21,8 @@ This project maintains a **fast & minimal** philosophy while providing education
 ### **Development Setup**
 ```bash
 # Clone the repository
-git clone https://github.com/huguesclouatre/math-mcp-server.git
-cd math-mcp-server
+git clone https://github.com/huguesclouatre/math-mcp-learning-server.git
+cd math-mcp-learning-server
 
 # Install dependencies and activate virtual environment
 uv sync
