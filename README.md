@@ -1,4 +1,6 @@
-# Math MCP Server
+# Math MCP Learning Server
+
+[![PyPI version](https://badge.fury.io/py/math-mcp-learning-server.svg)](https://pypi.org/project/math-mcp-learning-server/)
 
 A simple Model Context Protocol (MCP) server for mathematical operations. This project serves as a learning example demonstrating MCP fundamentals and best practices.
 
@@ -12,6 +14,10 @@ A simple Model Context Protocol (MCP) server for mathematical operations. This p
 - **Security Logging**: Monitor and log potentially dangerous expression attempts
 - **Type Safety**: Full Pydantic validation for inputs and structured content responses
 - **Comprehensive Testing**: 100% test pass rate with security and edge case coverage
+
+## Built with MCP Python SDK
+
+This server is built using the official [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk) with FastMCP patterns for rapid development and clean code architecture.
 
 ## Available Tools
 
@@ -62,15 +68,26 @@ Convert between different units of measurement.
 
 ## Installation
 
-### Prerequisites
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) package manager
+### Quick Install from PyPI
 
-### Setup
+The easiest way to use this MCP server is to install it directly from PyPI:
+
+```bash
+# Install and run using uvx (recommended)
+uvx math-mcp-learning-server
+
+# Or install globally
+uv tool install math-mcp-learning-server
+```
+
+### Development Setup
+
+For development or to run tests:
+
 ```bash
 # Clone the repository
-git clone https://github.com/huguesclouatre/math-mcp-server.git
-cd math-mcp-server
+git clone https://github.com/huguesclouatre/math-mcp-learning-server.git
+cd math-mcp-learning-server
 
 # Install dependencies
 uv sync
@@ -79,14 +96,14 @@ uv sync
 uv run pytest tests/ -v
 
 # Start the MCP server
-uv run math-mcp-server
+uv run math-mcp-learning-server
 ```
 
 ## Development
 
 ### Project Structure
 ```
-math-mcp-server/
+math-mcp-learning-server/
 ├── src/math_mcp/
 │   ├── __init__.py
 │   └── server.py          # Main MCP server implementation
@@ -110,17 +127,44 @@ The `calculate` tool uses restricted `eval()` with:
 - Restricted global scope (only `math` module and `abs`)
 - No access to dangerous built-ins or imports
 
-## Usage with Claude Desktop
+## Usage with Claude Code and Claude Desktop
 
-Add to your Claude Desktop configuration:
+### Claude Code (Recommended)
+
+Add the MCP server using the Claude Code CLI:
+
+```bash
+claude mcp add mathmcp uvx math-mcp-learning-server
+```
+
+This automatically configures the server to run from PyPI using uvx.
+
+### Claude Desktop
+
+Add to your Claude Desktop configuration file:
+
+```json
+{
+  "mcpServers": {
+    "math": {
+      "command": "uvx",
+      "args": ["math-mcp-learning-server"]
+    }
+  }
+}
+```
+
+### Development Configuration
+
+For development with local code:
 
 ```json
 {
   "mcpServers": {
     "math": {
       "command": "uv",
-      "args": ["run", "math-mcp-server"],
-      "cwd": "/path/to/math-mcp-server"
+      "args": ["run", "math-mcp-learning-server"],
+      "cwd": "/path/to/math-mcp-learning-server"
     }
   }
 }
@@ -180,6 +224,20 @@ Includes:
 - Code standards and security requirements
 - Testing procedures and quality assurance
 - Architecture guidelines and best practices
+
+## Publishing to PyPI
+
+This package is published to PyPI using `uv`. To publish updates:
+
+```bash
+# Build the package
+uv build
+
+# Publish to PyPI (requires PyPI credentials)
+uv publish --token pypi-YOUR_TOKEN_HERE
+```
+
+The package follows semantic versioning and includes comprehensive metadata for discoverability on PyPI.
 
 ## License
 
