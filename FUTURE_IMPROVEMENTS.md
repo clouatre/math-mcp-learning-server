@@ -108,29 +108,54 @@ uv run mcp install server.py
 *Access live data Claude cannot reach*
 
 #### **3.1 Financial Data Integration**
+
+**Recommended APIs (Educational-Friendly):**
+- **Alpha Vantage** - ✅ Free tier with demo access, comprehensive documentation, educational licenses
+- **Twelvedata** - ✅ Professional API with robust financial data coverage
+- **Yahoo Finance** - ✅ Free but unofficial, excellent for learning/prototyping
+- **Financial Modeling Prep** - Alternative with comprehensive financial datasets
+
 ```python
 @mcp.tool()
-async def get_stock_price(symbol: str) -> dict:
+async def get_stock_price(symbol: str, provider: str = "alpha_vantage") -> dict:
     """Get real-time stock prices (Claude cannot access)"""
+    # Implementation with multiple provider support
 
 @mcp.tool()
 async def calculate_portfolio_value(holdings: dict[str, float]) -> dict:
     """Calculate current portfolio value with live prices"""
+    # Uses preferred financial API for current prices
 
 @mcp.tool()
 async def get_exchange_rates(base: str, targets: list[str]) -> dict:
     """Get current currency exchange rates"""
+    # Multiple currency conversion providers
 ```
 
 #### **3.2 Scientific Data APIs**
+
+**Recommended APIs (Educational-Friendly):**
+- **OpenWeatherMap** - ✅ Free: 1M calls/month, Educational: 100M calls/month 🎓
+- **FRED (Federal Reserve)** - ✅ Economic data, free API key access, official U.S. data
+- **World Bank Open Data** - Educational focus, comprehensive global datasets
+- **NASA APIs** - Space/astronomy data, free access for educational use
+- **Open-Meteo** - Alternative free weather API, no key required
+
 ```python
 @mcp.tool()
-async def get_weather_data(location: str) -> dict:
+async def get_weather_data(location: str, provider: str = "openweather") -> dict:
     """Get current weather for calculations"""
+    # Multi-provider weather data integration
 
 @mcp.tool()
-async def get_economic_indicators(indicator: str) -> dict:
+async def get_economic_indicators(indicator: str, source: str = "fred") -> dict:
     """Get economic data (inflation, interest rates, etc.)"""
+    # Federal Reserve and World Bank data integration
+
+@mcp.tool()
+async def get_astronomical_data(query: str) -> dict:
+    """Get space/astronomy data for calculations"""
+    # NASA API integration for educational astronomy calculations
 ```
 
 **Installation:**
