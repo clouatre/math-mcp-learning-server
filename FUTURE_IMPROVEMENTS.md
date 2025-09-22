@@ -1,193 +1,307 @@
-# Future Improvements for Math MCP Server
+# Future Improvements: Quantitative Workspace Evolution
 
-This document contains potential enhancements identified from analyzing the official MCP "everything" server. These improvements maintain our **fast & minimal** philosophy while considering future educational and production needs.
+This document outlines the strategic evolution from a basic **math calculator MCP** to a **persistent quantitative workspace** that provides capabilities Claude Sonnet 4 cannot achieve natively.
 
-## 🎯 **Implementation Priority**
+## 📋 **MCP Dependency Management Note**
 
-### **High Priority** (Next Major Version)
-Improvements that directly enhance mathematical education without adding complexity.
+This document follows **official MCP Python SDK patterns**:
+- **Development/Testing**: `uv run mcp dev server.py --with package`
+- **Production**: `pip install package` first, then `uv run mcp install server.py`
+- **Core dependencies**: Kept minimal in `pyproject.toml` (mcp, pydantic only)
 
-#### **1. Progress Notifications for Complex Operations**
-- **What**: Add progress updates for computationally expensive operations
-- **Example**: Monte Carlo simulations, large statistical datasets, iterative algorithms
-- **Benefit**: Better UX for long calculations
-- **Implementation**: ~15 lines of code
+## 🎯 **Strategic Vision: Beyond Claude's Native Capabilities**
+
+### **Core Principle: Focus on What Claude Sonnet 4 CANNOT Do**
+
+**Claude Sonnet 4 excels at:**
+- Complex calculations and multi-step problems
+- Mathematical explanations and reasoning
+- Problem-solving and showing work
+
+**Our MCP's Unique Value (What Claude CANNOT do):**
+1. **🗄️ Persistent state** across conversations and sessions
+2. **📊 Visual output** generation (plots, charts, diagrams)
+3. **🌐 Real-time data** access via APIs
+4. **💾 File I/O** operations and data persistence
+5. **⚡ High-performance computing** with specialized libraries
+
+### **Transformation: Calculator → Quantitative Workspace**
+
+**Current State:** Basic math calculator with educational metadata
+**Target State:** Persistent quantitative workspace for coding environments
+
+## 🚀 **Implementation Roadmap**
+
+### **Phase 1: Persistent Workspace (Immediate - High Impact)**
+*Transform from stateless calculator to stateful workspace*
+
+#### **1.1 Cross-Session State Management**
 ```python
-# Only for operations > 1 second
-if iterations > 10000:
-    await server.notification({
-        "method": "notifications/progress",
-        "params": {"progress": i, "total": iterations, "progressToken": token}
-    })
+@mcp.tool()
+def save_calculation(name: str, expression: str, result: float) -> dict:
+    """Save calculation to persistent workspace (survives restarts)"""
+    # Implementation: ~/.math-mcp/workspace.json
+
+@mcp.resource("math://workspace")
+def get_workspace() -> str:
+    """Get persistent calculation workspace"""
+    # Shows all saved variables, calculations, history
+
+@mcp.tool()
+def load_variable(name: str) -> dict:
+    """Load previously saved calculation result"""
+    # Access saved values across Claude sessions
 ```
 
-#### **2. Enhanced Mathematical Domains**
-- **What**: Add specialized math areas while keeping single-file architecture
-- **Domains**:
-  - Linear algebra (matrix operations)
-  - Calculus (derivatives, integrals)
-  - Number theory (prime factorization, GCD/LCM)
-- **Benefit**: Broader educational coverage
-- **Implementation**: Additional tool functions with same pattern
+**User Experience:**
+```bash
+# Session 1 with Claude
+save_calculation("portfolio_return", "10000 * 1.07^5", 14025.52)
 
-#### **3. Auto-Completion for Math Functions**
-- **What**: Suggest math functions and constants as user types
-- **Example**: "sin(" suggests completion options
-- **Benefit**: Improved discoverability
-- **Implementation**: ~25 lines for completion handler
+# Session 2 (next day) - Claude remembers nothing, MCP remembers everything
+calculate("portfolio_return * 1.5")  # Uses saved value: 21038.28
+get_workspace()  # Shows all saved calculations
+```
+
+**Installation:** No additional dependencies required
+
+#### **1.2 Transport-Agnostic Architecture**
+- ✅ **Works with stdio** (Claude Desktop, Claude Code)
+- ✅ **Works with HTTP** (Web interfaces, API access)
+- ✅ **Cross-transport continuity** (save in stdio, access via HTTP)
+- ✅ **Session recovery** after process restarts
+
+### **Phase 2: Visual Generation (High Developer Value)**
+*Add visual output Claude cannot create*
+
+#### **2.1 Mathematical Visualization**
 ```python
-server.setRequestHandler(CompleteRequestSchema, async (request) => {
-    const values = MATH_FUNCTIONS.filter(fn => fn.startsWith(argument.value));
-    return { completion: { values, hasMore: false } };
-});
+@mcp.tool()
+def plot_function(expression: str, x_range: list[float]) -> dict:
+    """Generate mathematical function plots"""
+    # Returns base64 image Claude cannot generate natively
+
+@mcp.tool()
+def create_histogram(data: list[float], bins: int = 20) -> dict:
+    """Create statistical histograms"""
+    # Visual data analysis Claude cannot provide
+
+@mcp.tool()
+def plot_financial_chart(data: dict, chart_type: str) -> dict:
+    """Generate financial charts (candlestick, line, volume)"""
+    # Financial visualization capabilities
 ```
 
-### **Medium Priority** (Future Enhancements)
-Features that add value but require more architectural consideration.
+**Installation:**
+```bash
+# Development mode (testing/learning):
+uv run mcp dev server.py --with matplotlib
 
-#### **4. Interactive Math Tutoring**
-- **What**: Use MCP elicitation for step-by-step problem solving
-- **Example**: Guide students through algebraic equation solving
-- **Benefit**: Active learning vs passive calculation
-- **Complexity**: Moderate - requires conversation state management
-
-#### **5. Multi-Transport Architecture**
-- **What**: Support HTTP/SSE transports for web integration
-- **Files**: Split into `stdio.py`, `sse.py`, `http.py`, `core.py`
-- **Benefit**: Web application integration
-- **Trade-off**: Increases file count but improves deployment flexibility
-
-#### **6. Resource Subscriptions for Live Updates**
-- **What**: Real-time updates for calculation history
-- **Example**: Live-updating dashboard of mathematical constants
-- **Benefit**: Dynamic educational displays
-- **Implementation**: Resource subscription handlers
-
-#### **7. Structured Mathematical Content**
-- **What**: Return mathematical expressions in structured formats
-- **Example**: LaTeX rendering support, formula breakdown
-- **Benefit**: Better integration with educational platforms
-- **Implementation**: Enhanced response schemas
-
-### **Low Priority** (Nice-to-Have)
-Advanced features for specialized use cases.
-
-#### **8. Mathematical Formula Parser**
-- **What**: Parse and validate complex mathematical notation
-- **Example**: Support for LaTeX input → calculation
-- **Benefit**: Natural mathematical expression input
-- **Complexity**: High - requires expression parsing library
-
-#### **9. Unit Test Coverage Reporting**
-- **What**: Detailed test coverage metrics
-- **Tools**: Coverage.py integration
-- **Benefit**: Ensure comprehensive testing
-- **Implementation**: CI/CD pipeline enhancement
-
-#### **10. Mathematical Proof Verification**
-- **What**: Simple logical proof checking
-- **Example**: Verify algebraic manipulation steps
-- **Benefit**: Educational verification tool
-- **Complexity**: Very High - requires mathematical logic engine
-
-#### **11. Performance Profiling**
-- **What**: Built-in performance monitoring for calculations
-- **Metrics**: Execution time, memory usage, complexity analysis
-- **Benefit**: Educational insights into algorithm efficiency
-- **Implementation**: Decorators around calculation functions
-
-## 🏗️ **Architectural Improvements**
-
-### **Production Readiness**
-#### **1. Binary Packaging**
-- **Current**: Python module installation
-- **Future**: `npx`-style binary distribution
-```json
-{
-  "bin": { "mcp-server-math": "dist/index.js" },
-  "scripts": { "build": "build and package for distribution" }
-}
+# Production mode (actual deployment):
+pip install matplotlib
+uv run mcp install server.py
 ```
 
-#### **2. Configuration Management**
-- **What**: External configuration for constants, precision settings
-- **File**: `math_config.json` for server customization
-- **Benefit**: Environment-specific tuning without code changes
+**Educational Value:** Visual learning dramatically improves mathematical understanding
 
-#### **3. Performance Caching**
-- **What**: Cache expensive calculations (factorial, prime calculations)
-- **Implementation**: LRU cache for function results
-- **Benefit**: Faster repeated calculations
-- **Trade-off**: Memory usage vs speed
+### **Phase 3: Real-Time Data Integration (Unique Capability)**
+*Access live data Claude cannot reach*
 
-### **Educational Enhancements**
-#### **1. Difficulty Progression Tracking**
-- **What**: Track user progress through mathematical complexity
-- **Storage**: Calculation history analysis
-- **Benefit**: Adaptive learning recommendations
+#### **3.1 Financial Data Integration**
+```python
+@mcp.tool()
+async def get_stock_price(symbol: str) -> dict:
+    """Get real-time stock prices (Claude cannot access)"""
 
-#### **2. Mathematical Concept Mapping**
-- **What**: Link calculations to educational concepts
-- **Example**: "This uses the Pythagorean theorem"
-- **Implementation**: Enhanced annotations with concept tags
+@mcp.tool()
+async def calculate_portfolio_value(holdings: dict[str, float]) -> dict:
+    """Calculate current portfolio value with live prices"""
 
-#### **3. Error Analysis and Hints**
-- **What**: Detailed error explanations with learning suggestions
-- **Example**: "Division by zero occurs when the denominator equals zero. Try checking your input values."
-- **Benefit**: Educational error handling
+@mcp.tool()
+async def get_exchange_rates(base: str, targets: list[str]) -> dict:
+    """Get current currency exchange rates"""
+```
 
-## 🔧 **Technical Debt Prevention**
+#### **3.2 Scientific Data APIs**
+```python
+@mcp.tool()
+async def get_weather_data(location: str) -> dict:
+    """Get current weather for calculations"""
 
-### **Code Quality**
-#### **1. Type Safety Enhancements**
-- **Current**: Basic Pydantic validation
-- **Future**: Comprehensive type hints with `mypy --strict`
-- **Benefit**: Catch errors at development time
+@mcp.tool()
+async def get_economic_indicators(indicator: str) -> dict:
+    """Get economic data (inflation, interest rates, etc.)"""
+```
 
-#### **2. Security Hardening**
-- **Rate Limiting**: Prevent calculation abuse
-- **Input Sanitization**: Additional expression validation layers
-- **Audit Logging**: Comprehensive security event logging
+**Installation:**
+```bash
+# Development mode (testing/learning):
+uv run mcp dev server.py --with httpx --with pandas
 
-#### **3. Documentation Generation**
-- **Auto-docs**: Generate API documentation from docstrings
-- **Examples**: Interactive documentation with calculation examples
-- **Tool**: Sphinx or MkDocs integration
+# Production mode (actual deployment):
+pip install httpx pandas
+uv run mcp install server.py
+```
 
-## 📊 **Decision Framework**
+### **Phase 4: High-Performance Computing (Advanced)**
+*Computational capabilities beyond Claude's scope*
 
-When considering these improvements, evaluate against:
+#### **4.1 Scientific Computing**
+```python
+@mcp.tool()
+def matrix_operations(operation: str, matrices: list) -> dict:
+    """Advanced linear algebra operations"""
+    # NumPy/SciPy integration for performance
 
-### **✅ Include If:**
-- Directly improves mathematical education
-- Maintains single-file simplicity (or provides clear architectural benefit)
-- Adds ≤50 lines of core logic
-- Enhances security or reliability
-- Requested by actual users
+@mcp.tool()
+def monte_carlo_simulation(params: dict, iterations: int) -> dict:
+    """Monte Carlo simulations with progress tracking"""
+    # High-performance statistical analysis
 
-### **❌ Skip If:**
-- Adds complexity without clear educational benefit
-- Requires external dependencies for core functionality
-- Duplicates existing functionality
-- Primarily serves edge cases
-- Violates the "fast & minimal" philosophy
+@mcp.tool()
+def optimize_portfolio(returns: list, risks: list, constraints: dict) -> dict:
+    """Portfolio optimization using scipy.optimize"""
+```
 
-## 🎯 **Recommended Next Steps**
+**Installation:**
+```bash
+# Development mode (testing/learning):
+uv run mcp dev server.py --with numpy --with scipy --with pandas --with matplotlib
 
-1. **User Feedback**: Deploy current version and gather usage patterns
-2. **Performance Baseline**: Measure current performance for optimization targets
-3. **Educational Validation**: Test with actual math students/teachers
-4. **Gradual Enhancement**: Implement high-priority items one at a time
-5. **Architecture Review**: Reassess single-file approach as features grow
+# Production mode (actual deployment):
+pip install numpy scipy pandas matplotlib
+uv run mcp install server.py
+```
 
-## 📝 **Implementation Notes**
+## 🏗️ **Technical Implementation Strategy**
 
-- **Preserve Philosophy**: Each addition should justify its complexity cost
-- **Test Coverage**: Maintain 100% test pass rate
-- **Performance**: No degradation of existing functionality speed
-- **Educational Focus**: Every feature should serve mathematical learning
-- **Backward Compatibility**: Existing integrations should continue working
+### **Official MCP Best Practices Compliance**
+
+#### **✅ Runtime Dependencies (Official Pattern)**
+```toml
+# pyproject.toml - Keep minimal core dependencies
+dependencies = [
+    "mcp>=1.14.1",
+    "pydantic>=2.11.9",
+]
+# NO dependency groups - use runtime --with flags
+```
+
+#### **✅ Graceful Degradation Pattern**
+```python
+@mcp.tool()
+def advanced_statistics(data: list[float]) -> dict:
+    """Advanced statistical analysis (requires scipy)"""
+    try:
+        import scipy.stats
+        # Advanced functionality
+        return {"result": advanced_analysis}
+    except ImportError:
+        return {
+            "error": "Advanced statistics requires scipy",
+            "install": "pip install scipy",
+            "dev_mode": "Or use: uv run mcp dev server.py --with scipy"
+        }
+```
+
+#### **✅ User Installation Commands**
+```bash
+# Basic educational use (production):
+uv run mcp install math-mcp-learning-server
+
+# Development with optional dependencies:
+uv run mcp dev server.py --with matplotlib
+uv run mcp dev server.py --with matplotlib --with httpx --with numpy --with pandas
+
+# Production with optional dependencies:
+pip install matplotlib httpx numpy pandas
+uv run mcp install server.py
+```
+
+### **Architecture Principles**
+
+1. **Single Server Design** - One focused MCP server (not multiple servers)
+2. **Transport Agnostic** - Same functionality across stdio/HTTP
+3. **Educational Core** - Basic math remains simple and clear
+4. **Progressive Enhancement** - Advanced features are optional
+5. **Persistent State** - Workspace survives sessions and restarts
+
+## 📊 **Success Metrics**
+
+### **Quantitative Goals**
+- **Adoption**: Used in 3+ coding environments (Claude Code, Amazon Q, OpenCode)
+- **Retention**: Users return to access saved calculations
+- **Enhancement**: >50% of users enable optional features
+- **Education**: Maintains simplicity for learning while providing real utility
+
+### **Qualitative Validation**
+- **Developer Workflow**: "I use this alongside Claude for quantitative work"
+- **Educational Value**: "Great for learning MCP patterns and math together"
+- **Unique Capability**: "Claude can't do this - I need the MCP for persistent state"
+
+## 🔄 **Migration Strategy**
+
+### **Backward Compatibility**
+- ✅ All existing tools continue working
+- ✅ No breaking changes to current API
+- ✅ Educational examples remain simple
+- ✅ Core functionality needs no additional dependencies
+
+### **Gradual Enhancement**
+```python
+# Phase 1: Add persistence (no new dependencies)
+# Phase 2: Add visualization (optional matplotlib)
+# Phase 3: Add data integration (optional httpx)
+# Phase 4: Add high-performance computing (optional numpy/scipy)
+```
+
+## 🚫 **What We Won't Build**
+
+**Avoid duplicating Claude's strengths:**
+- ❌ Complex mathematical explanations (Claude does this better)
+- ❌ Step-by-step problem solving (Claude excels at this)
+- ❌ Mathematical reasoning and proofs (Claude's native capability)
+- ❌ Educational content generation (Claude is superior)
+
+**Avoid MCP anti-patterns:**
+- ❌ Dependency groups `[scientific]` (not official MCP pattern)
+- ❌ Multiple separate servers (overengineering)
+- ❌ Complex plugin architectures (not MCP-style)
+- ❌ Transport-specific implementations (violates MCP principles)
+
+## 🎯 **Decision Framework**
+
+### **✅ Include Feature If:**
+- Provides capability Claude Sonnet 4 **cannot** achieve natively
+- Works identically across stdio and HTTP transports
+- Maintains educational value while adding real utility
+- Uses official FastMCP patterns (`--with` runtime dependencies)
+- Enhances coding environment workflows
+
+### **❌ Skip Feature If:**
+- Duplicates Claude's existing mathematical capabilities
+- Requires breaking current simple educational patterns
+- Only works with specific transports
+- Violates official MCP best practices
+- Adds complexity without unique value
+
+## 🏁 **Next Steps**
+
+### **Immediate (Week 1)**
+1. **Implement persistent workspace** (Phase 1.1)
+2. **Add workspace resource** (`math://workspace`)
+3. **Test transport-agnostic state** (stdio + HTTP)
+
+### **Short-term (Month 1)**
+1. **Add matplotlib integration** (Phase 2.1)
+2. **Create visualization examples**
+3. **Update documentation with installation patterns**
+
+### **Medium-term (Quarter 1)**
+1. **Integrate real-time data APIs** (Phase 3.1)
+2. **Add scientific computing capabilities** (Phase 4.1)
+3. **Validate with coding environment users**
 
 ---
 
-*This document serves as a living roadmap. Regular review ensures we balance feature requests with our core principle of being a fast, minimal, educational mathematics server.*
+*This strategic roadmap transforms our educational MCP into a persistent quantitative workspace that provides genuine value beyond Claude Sonnet 4's native mathematical capabilities, while maintaining simplicity and adherence to official MCP best practices.*
