@@ -181,8 +181,8 @@ wheels = [
 ]
 
 [[package]]
-name = "math-mcp-server"
-version = "0.1.0"
+name = "math-mcp-learning-server"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },

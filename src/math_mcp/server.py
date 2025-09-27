@@ -166,6 +166,22 @@ def _classify_expression_difficulty(expression: str) -> str:
     else:
         return "basic"
 
+
+def _classify_expression_topic(expression: str) -> str:
+    """Enhanced topic classification for educational metadata."""
+    clean_expr = expression.lower()
+
+    if any(word in clean_expr for word in ["interest", "rate", "investment", "portfolio"]):
+        return "finance"
+    elif any(word in clean_expr for word in ["pi", "radius", "area", "volume"]):
+        return "geometry"
+    elif any(word in clean_expr for word in ["sin", "cos", "tan"]):
+        return "trigonometry"
+    elif any(word in clean_expr for word in ["log", "ln", "exp"]):
+        return "logarithms"
+    else:
+        return "arithmetic"
+
 @mcp.tool()
 def calculate(
     expression: str,
@@ -365,6 +381,135 @@ def convert_units(
     }
 
 
+@mcp.tool()
+def save_calculation(
+    name: str,
+    expression: str,
+    result: float,
+    ctx: Context[ServerSession, AppContext]
+):
+    """Save calculation to persistent workspace (survives restarts).
+
+    Args:
+        name: Variable name to save under
+        expression: The mathematical expression
+        result: The calculated result
+
+    Examples:
+        save_calculation("portfolio_return", "10000 * 1.07^5", 14025.52)
+        save_calculation("circle_area", "pi * 5^2", 78.54)
+    """
+    # Validate inputs
+    if not name.strip():
+        raise ValueError("Variable name cannot be empty")
+
+    if not name.replace('_', '').replace('-', '').isalnum():
+        raise ValueError("Variable name must contain only letters, numbers, underscores, and hyphens")
+
+    # Get educational metadata from expression classification
+    difficulty = _classify_expression_difficulty(expression)
+    topic = _classify_expression_topic(expression)
+
+    metadata = {
+        "difficulty": difficulty,
+        "topic": topic,
+        "session_id": id(ctx.request_context.lifespan_context)
+    }
+
+    # Save to persistent workspace
+    from .persistence.workspace import _workspace_manager
+    result_data = _workspace_manager.save_variable(name, expression, result, metadata)
+
+    # Also add to session history
+    history_entry = {
+        "type": "save_calculation",
+        "name": name,
+        "expression": expression,
+        "result": result,
+        "timestamp": datetime.now().isoformat()
+    }
+    ctx.request_context.lifespan_context.calculation_history.append(history_entry)
+
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": f"**Saved Variable:** {name} = {result}\n**Expression:** {expression}\n**Status:** {'Success' if result_data['success'] else 'Failed'}",
+                "annotations": {
+                    "action": "save_calculation",
+                    "variable_name": name,
+                    "is_new": result_data.get("is_new", True),
+                    "total_variables": result_data.get("total_variables", 0),
+                    **metadata
+                }
+            }
+        ]
+    }
+
+
+@mcp.tool()
+def load_variable(
+    name: str,
+    ctx: Context[ServerSession, AppContext]
+):
+    """Load previously saved calculation result from workspace.
+
+    Args:
+        name: Variable name to load
+
+    Examples:
+        load_variable("portfolio_return")  # Returns saved calculation
+        load_variable("circle_area")       # Access across sessions
+    """
+    from .persistence.workspace import _workspace_manager
+    result_data = _workspace_manager.load_variable(name)
+
+    if not result_data["success"]:
+        available = result_data.get("available_variables", [])
+        error_msg = result_data["error"]
+        if available:
+            error_msg += f"\nAvailable variables: {', '.join(available)}"
+
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"**Error:** {error_msg}",
+                    "annotations": {
+                        "action": "load_variable_error",
+                        "requested_name": name,
+                        "available_count": len(available)
+                    }
+                }
+            ]
+        }
+
+    # Add to session history
+    history_entry = {
+        "type": "load_variable",
+        "name": name,
+        "expression": result_data["expression"],
+        "result": result_data["result"],
+        "timestamp": datetime.now().isoformat()
+    }
+    ctx.request_context.lifespan_context.calculation_history.append(history_entry)
+
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": f"**Loaded Variable:** {name} = {result_data['result']}\n**Expression:** {result_data['expression']}\n**Saved:** {result_data['timestamp']}",
+                "annotations": {
+                    "action": "load_variable",
+                    "variable_name": name,
+                    "original_timestamp": result_data["timestamp"],
+                    **result_data.get("metadata", {})
+                }
+            }
+        ]
+    }
+
+
 # === RESOURCES: DATA EXPOSURE ===
 
 @mcp.resource("math://constants/{constant}")
@@ -403,6 +548,18 @@ def get_calculation_history(ctx: Context[ServerSession, AppContext]) -> str:
         history_text += f"\n... and {len(history) - 10} more calculations"
 
     return history_text
+
+
+@mcp.resource("math://workspace")
+def get_workspace(ctx: Context[ServerSession, AppContext]) -> str:
+    """Get persistent calculation workspace showing all saved variables.
+
+    This resource displays the complete state of the persistent workspace,
+    including all saved calculations, metadata, and statistics. The workspace
+    survives server restarts and is accessible across different transport modes.
+    """
+    from .persistence.workspace import _workspace_manager
+    return _workspace_manager.get_workspace_summary()
 
 
 # === PROMPTS: INTERACTION TEMPLATES ===
