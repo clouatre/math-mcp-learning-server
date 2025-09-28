@@ -54,6 +54,9 @@ class UnitConversionResult(BaseModel):
     conversion_type: str = Field(description="Type of conversion")
 
 
+# === IMPORTS: MOVE PERSISTENCE IMPORT TO TOP ===
+from .persistence.workspace import _workspace_manager
+
 # === APPLICATION CONTEXT ===
 
 @dataclass
@@ -417,7 +420,6 @@ def save_calculation(
     }
 
     # Save to persistent workspace
-    from .persistence.workspace import _workspace_manager
     result_data = _workspace_manager.save_variable(name, expression, result, metadata)
 
     # Also add to session history
@@ -461,7 +463,6 @@ def load_variable(
         load_variable("portfolio_return")  # Returns saved calculation
         load_variable("circle_area")       # Access across sessions
     """
-    from .persistence.workspace import _workspace_manager
     result_data = _workspace_manager.load_variable(name)
 
     if not result_data["success"]:
@@ -539,8 +540,6 @@ def get_calculation_history() -> str:
     Note: Session history is currently limited to persistent workspace data.
     For full session tracking, use the workspace resource at math://workspace.
     """
-    from .persistence.workspace import _workspace_manager
-
     # Since we can't access session context in resources, show workspace history instead
     workspace_data = _workspace_manager._load_workspace()
 
@@ -574,8 +573,6 @@ def get_workspace(view: str) -> str:
     This resource displays the persistent workspace state that survives
     server restarts and is accessible across different transport modes.
     """
-    from .persistence.workspace import _workspace_manager
-
     if view == "variables":
         workspace_data = _workspace_manager._load_workspace()
         if not workspace_data.variables:
