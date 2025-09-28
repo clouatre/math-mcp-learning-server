@@ -346,6 +346,8 @@ The package follows semantic versioning and includes comprehensive metadata for 
 
 MIT License - see LICENSE file for details
 
+<!-- Last updated: 2025-09-28 -->
+
 ## Next Steps
 
 This basic math MCP can be extended with:
