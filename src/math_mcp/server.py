@@ -533,25 +533,37 @@ def get_math_constant(constant: str) -> str:
 
 
 @mcp.resource("math://history")
-def get_calculation_history(ctx: Context[ServerSession, AppContext]) -> str:
-    """Get the history of calculations performed in this session."""
-    history = ctx.request_context.lifespan_context.calculation_history
+def get_calculation_history() -> str:
+    """Get the history of calculations performed in this session.
 
-    if not history:
-        return "No calculations performed yet in this session."
+    Note: Session history is currently limited to persistent workspace data.
+    For full session tracking, use the workspace resource at math://workspace.
+    """
+    from .persistence.workspace import _workspace_manager
 
-    history_text = "Calculation History:\n\n"
-    for i, entry in enumerate(history[-10:], 1):  # Show last 10
-        history_text += f"{i}. {entry['expression']} = {entry['result']} (at {entry['timestamp']})\n"
+    # Since we can't access session context in resources, show workspace history instead
+    workspace_data = _workspace_manager._load_workspace()
 
-    if len(history) > 10:
-        history_text += f"\n... and {len(history) - 10} more calculations"
+    if not workspace_data.variables:
+        return "No calculations in workspace yet. Use save_calculation() to persist calculations."
+
+    history_text = "Calculation History (from workspace):\n\n"
+
+    # Sort by timestamp to show chronological order
+    variables = list(workspace_data.variables.items())
+    variables.sort(key=lambda x: x[1].timestamp, reverse=True)
+
+    for i, (name, var) in enumerate(variables[:10], 1):  # Show last 10
+        history_text += f"{i}. {name}: {var.expression} = {var.result} (saved {var.timestamp})\n"
+
+    if len(variables) > 10:
+        history_text += f"\n... and {len(variables) - 10} more calculations"
 
     return history_text
 
 
 @mcp.resource("math://workspace")
-def get_workspace(ctx: Context[ServerSession, AppContext]) -> str:
+def get_workspace() -> str:
     """Get persistent calculation workspace showing all saved variables.
 
     This resource displays the complete state of the persistent workspace,
