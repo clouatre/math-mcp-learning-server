@@ -511,6 +511,11 @@ def load_variable(
 
 # === RESOURCES: DATA EXPOSURE ===
 
+@mcp.resource("math://test")
+def simple_test() -> str:
+    """Simple test resource like FastMCP examples"""
+    return "✅ Test resource working!"
+
 @mcp.resource("math://constants/{constant}")
 def get_math_constant(constant: str) -> str:
     """Get mathematical constants like pi, e, golden ratio, etc."""
