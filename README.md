@@ -2,18 +2,30 @@
 
 [![PyPI version](https://badge.fury.io/py/math-mcp-learning-server.svg)](https://pypi.org/project/math-mcp-learning-server/)
 
-A simple Model Context Protocol (MCP) server for mathematical operations. This project serves as a learning example demonstrating MCP fundamentals and best practices.
+A **persistent quantitative workspace** built as a Model Context Protocol (MCP) server. This project transforms from a basic calculator to provide **cross-session state persistence** - a unique capability that Claude Sonnet 4 cannot achieve natively.
+
+Perfect for learning MCP fundamentals, demonstrating enterprise-grade patterns, and serving as a foundation for advanced mathematical workflows.
 
 ## Features
 
+### 🚀 Persistent Workspace (New!)
+- **Cross-Session State**: Save calculations and access them across different Claude sessions
+- **Persistent Storage**: Variables survive server restarts and session changes
+- **Cross-Platform**: Works on Windows (`%LOCALAPPDATA%`), macOS, and Linux (`~/.math-mcp`)
+- **Thread-Safe**: Concurrent access with atomic file operations
+
+### 🧮 Mathematical Operations
 - **Safe Expression Evaluation**: Securely evaluate mathematical expressions with enhanced error handling
 - **Educational Annotations**: Responses include difficulty levels and learning metadata
 - **Statistical Analysis**: Calculate mean, median, mode, standard deviation, and variance
 - **Financial Calculations**: Compound interest calculations with formatted output
 - **Unit Conversions**: Length, weight, and temperature conversions
+
+### 🔒 Enterprise-Grade Quality
 - **Security Logging**: Monitor and log potentially dangerous expression attempts
 - **Type Safety**: Full Pydantic validation for inputs and structured content responses
-- **Comprehensive Testing**: 100% test pass rate with security and edge case coverage
+- **Comprehensive Testing**: Complete test coverage with security and edge case validation
+- **Zero Dependencies**: Core persistence features use only Python stdlib
 
 ## Built with MCP Python SDK
 
@@ -21,7 +33,39 @@ This server is built using the official [Model Context Protocol Python SDK](http
 
 ## Available Tools
 
-### 1. `calculate`
+### 🗄️ Persistent Workspace Tools
+
+#### `save_calculation`
+Save calculations to persistent storage for access across sessions.
+
+**Example:**
+```json
+{
+  "name": "portfolio_return",
+  "expression": "10000 * 1.07^5",
+  "result": 14025.52
+}
+```
+
+**Use Cases:**
+- Save complex financial calculations
+- Store frequently used values
+- Build persistent calculation workflows
+
+#### `load_variable`
+Access previously saved calculations from any Claude session.
+
+**Example:**
+```json
+{
+  "name": "portfolio_return"
+}
+```
+Returns the saved calculation with its expression, result, and metadata.
+
+### 📊 Mathematical Tools
+
+#### `calculate`
 Safely evaluate mathematical expressions with support for basic operations and math functions.
 
 **Examples:**
@@ -32,7 +76,7 @@ sin(3.14159/2)    → 1.0
 abs(-5)           → 5.0
 ```
 
-### 2. `statistics`
+#### `statistics`
 Perform statistical calculations on lists of numbers.
 
 **Operations:** `mean`, `median`, `mode`, `std_dev`, `variance`
@@ -45,7 +89,7 @@ Perform statistical calculations on lists of numbers.
 }
 ```
 
-### 3. `compound_interest`
+#### `compound_interest`
 Calculate compound interest for investments.
 
 **Example:**
@@ -58,13 +102,39 @@ Calculate compound interest for investments.
 }
 ```
 
-### 4. `convert_units`
+#### `convert_units`
 Convert between different units of measurement.
 
 **Supported unit types:**
 - **Length**: mm, cm, m, km, in, ft, yd, mi
 - **Weight**: g, kg, oz, lb
 - **Temperature**: c, f, k (Celsius, Fahrenheit, Kelvin)
+
+## Available Resources
+
+### `math://workspace`
+View your complete persistent workspace with all saved calculations, metadata, and statistics.
+
+**Returns:**
+- All saved variables with expressions and results
+- Educational metadata (difficulty, topic)
+- Workspace statistics (total calculations, session count)
+- Timestamps for tracking calculation history
+
+**Example Output:**
+```markdown
+# Math Workspace (2 variables)
+
+## Saved Variables
+- **portfolio_return**: `10000 * 1.07^5` = 14025.52
+  - Metadata: difficulty: intermediate, topic: finance
+- **circle_area**: `pi * 5^2` = 78.54
+  - Metadata: difficulty: basic, topic: geometry
+
+## Statistics
+- Total Calculations: 2
+- Last Access: 2025-09-28T08:40:34
+```
 
 ## Installation
 
@@ -106,9 +176,15 @@ uv run math-mcp-learning-server
 math-mcp-learning-server/
 ├── src/math_mcp/
 │   ├── __init__.py
-│   └── server.py          # Main MCP server implementation
+│   ├── server.py          # Main MCP server implementation
+│   └── persistence/       # Persistent workspace functionality
+│       ├── __init__.py
+│       ├── models.py      # Pydantic data models
+│       ├── storage.py     # Cross-platform file operations
+│       └── workspace.py   # Thread-safe workspace manager
 ├── tests/
-│   └── test_math_operations.py
+│   ├── test_math_operations.py
+│   └── test_persistence.py
 ├── pyproject.toml         # Project configuration
 └── README.md
 ```
@@ -193,6 +269,33 @@ Assistant: [uses compound_interest tool]
 Principal: $5000.00
 Final Amount: $7814.17
 Total Interest: $2814.17
+```
+
+### Persistent Workspace
+```
+User: Save this portfolio calculation for later: 10000 * 1.07^5
+Assistant: [uses save_calculation tool]
+Saved Variable: portfolio_return = 14025.52
+Expression: 10000 * 1.07^5
+Status: Success
+
+User: What was my portfolio return calculation?
+Assistant: [uses load_variable tool]
+Loaded Variable: portfolio_return = 14025.52
+Expression: 10000 * 1.07^5
+Saved: 2025-01-15T10:30:00
+
+User: Show me my complete workspace
+Assistant: [uses math://workspace resource]
+# Math Workspace (2 variables)
+
+## Saved Variables
+- portfolio_return: 10000 * 1.07^5 = 14025.52
+- circle_area: pi * 5^2 = 78.54
+
+## Statistics
+- Total Calculations: 2
+- Last Access: 2025-01-15T10:35:00
 ```
 
 ## Learning Objectives

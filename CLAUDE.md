@@ -40,6 +40,15 @@ gh pr merge --squash --delete-branch
 "changes"
 ```
 
+### **CRITICAL: No AI Attribution in Commits**
+
+**NEVER include AI attribution in commit messages:**
+- ❌ NO "Generated with Claude Code" lines
+- ❌ NO "Co-authored-by: Claude" lines
+- ❌ NO AI tool attribution of any kind
+
+**All commits must appear as authored by human contributors only.**
+
 ### Pull Request Requirements
 
 **Title Format**: `[Type] Clear description of change`
