@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Math MCP Server - FastMCP Implementation
+Math MCP Server - FastMCP 2.0 Implementation
 Educational MCP server demonstrating all three MCP pillars: Tools, Resources, and Prompts.
-Uses official FastMCP patterns with structured output and multi-transport support.
+Uses FastMCP 2.0 patterns with structured output and multi-transport support.
 """
 
 import logging
@@ -14,8 +14,7 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
-from mcp.server.fastmcp import Context, FastMCP
-from mcp.server.session import ServerSession
+from fastmcp import FastMCP, Context
 
 
 # === PYDANTIC MODELS FOR STRUCTURED OUTPUT ===
@@ -185,7 +184,7 @@ def _classify_expression_topic(expression: str) -> str:
 @mcp.tool()
 def calculate(
     expression: str,
-    ctx: Context[ServerSession, AppContext]
+    ctx: Context
 ):
     """Safely evaluate mathematical expressions with support for basic operations and math functions.
 
@@ -386,7 +385,7 @@ def save_calculation(
     name: str,
     expression: str,
     result: float,
-    ctx: Context[ServerSession, AppContext]
+    ctx: Context
 ):
     """Save calculation to persistent workspace (survives restarts).
 
@@ -450,7 +449,7 @@ def save_calculation(
 @mcp.tool()
 def load_variable(
     name: str,
-    ctx: Context[ServerSession, AppContext]
+    ctx: Context
 ):
     """Load previously saved calculation result from workspace.
 
@@ -533,25 +532,36 @@ def get_math_constant(constant: str) -> str:
 
 
 @mcp.resource("math://history")
-def get_calculation_history(ctx: Context[ServerSession, AppContext]) -> str:
-    """Get the history of calculations performed in this session."""
-    history = ctx.request_context.lifespan_context.calculation_history
+def get_calculation_history() -> str:
+    """Get the history of calculations performed in this session.
 
-    if not history:
-        return "No calculations performed yet in this session."
+    Note: Shows persistent workspace history since session context not available in resources.
+    """
+    from .persistence.workspace import _workspace_manager
 
-    history_text = "Calculation History:\n\n"
-    for i, entry in enumerate(history[-10:], 1):  # Show last 10
-        history_text += f"{i}. {entry['expression']} = {entry['result']} (at {entry['timestamp']})\n"
+    # Get workspace history since session context isn't available
+    workspace_data = _workspace_manager._load_workspace()
 
-    if len(history) > 10:
-        history_text += f"\n... and {len(history) - 10} more calculations"
+    if not workspace_data.variables:
+        return "No calculations in workspace yet. Use save_calculation() to persist calculations."
+
+    history_text = "Calculation History (from workspace):\n\n"
+
+    # Sort by timestamp to show chronological order
+    variables = list(workspace_data.variables.items())
+    variables.sort(key=lambda x: x[1].timestamp, reverse=True)
+
+    for i, (name, var) in enumerate(variables[:10], 1):  # Show last 10
+        history_text += f"{i}. {name}: {var.expression} = {var.result} (saved {var.timestamp})\n"
+
+    if len(variables) > 10:
+        history_text += f"\n... and {len(variables) - 10} more calculations"
 
     return history_text
 
 
 @mcp.resource("math://workspace")
-def get_workspace(ctx: Context[ServerSession, AppContext]) -> str:
+def get_workspace() -> str:
     """Get persistent calculation workspace showing all saved variables.
 
     This resource displays the complete state of the persistent workspace,
