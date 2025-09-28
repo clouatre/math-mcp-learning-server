@@ -562,16 +562,45 @@ def get_calculation_history() -> str:
     return history_text
 
 
-@mcp.resource("math://workspace")
-def get_workspace() -> str:
-    """Get persistent calculation workspace showing all saved variables.
+@mcp.resource("math://workspace/{view}")
+def get_workspace(view: str) -> str:
+    """Get persistent calculation workspace in different views.
 
-    This resource displays the complete state of the persistent workspace,
-    including all saved calculations, metadata, and statistics. The workspace
-    survives server restarts and is accessible across different transport modes.
+    Available views:
+    - summary: Complete workspace summary (default)
+    - variables: List of saved variables
+    - stats: Workspace statistics only
+
+    This resource displays the persistent workspace state that survives
+    server restarts and is accessible across different transport modes.
     """
     from .persistence.workspace import _workspace_manager
-    return _workspace_manager.get_workspace_summary()
+
+    if view == "variables":
+        workspace_data = _workspace_manager._load_workspace()
+        if not workspace_data.variables:
+            return "No variables saved in workspace yet."
+
+        result = "# Workspace Variables\n\n"
+        for name, var in workspace_data.variables.items():
+            result += f"**{name}**: `{var.expression}` = {var.result} (saved {var.timestamp})\n"
+        return result
+
+    elif view == "stats":
+        workspace_data = _workspace_manager._load_workspace()
+        stats = workspace_data.statistics
+        return f"""# Workspace Statistics
+
+- **Total Variables**: {len(workspace_data.variables)}
+- **Total Calculations**: {stats.get('total_calculations', 0)}
+- **Session Count**: {stats.get('session_count', 1)}
+- **Last Access**: {stats.get('last_access', 'Never')}
+- **Created**: {workspace_data.created}
+- **Last Updated**: {workspace_data.updated}
+"""
+
+    else:  # Default: summary view
+        return _workspace_manager.get_workspace_summary()
 
 
 # === PROMPTS: INTERACTION TEMPLATES ===
