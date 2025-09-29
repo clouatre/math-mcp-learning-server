@@ -27,9 +27,9 @@ Perfect for learning MCP fundamentals, demonstrating enterprise-grade patterns, 
 - **Comprehensive Testing**: Complete test coverage with security and edge case validation
 - **Zero Dependencies**: Core persistence features use only Python stdlib
 
-## Built with MCP Python SDK
+## Built with FastMCP 2.0
 
-This server is built using the official [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk) with FastMCP patterns for rapid development and clean code architecture.
+This server is built using [FastMCP 2.0](https://gofastmcp.com/integrations/anthropic) with the official [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk) for rapid development and clean code architecture.
 
 ## Available Tools
 
@@ -71,9 +71,10 @@ Safely evaluate mathematical expressions with support for basic operations and m
 **Examples:**
 ```
 2 + 3 * 4          → 14
-sqrt(16)          → 4.0
-sin(3.14159/2)    → 1.0
-abs(-5)           → 5.0
+sqrt(16)           → 4.0
+pow(2, 3)          → 8.0
+sin(3.14159/2)     → 1.0
+abs(-5)            → 5.0
 ```
 
 #### `statistics`
@@ -344,7 +345,7 @@ The package follows semantic versioning and includes comprehensive metadata for 
 
 ## License
 
-MIT License - see LICENSE file for details
+[MIT License](LICENSE) - Full license details available in the LICENSE file.
 
 ## Next Steps
 
