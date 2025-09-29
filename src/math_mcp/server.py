@@ -84,13 +84,32 @@ mcp = FastMCP(
 
 # === SECURITY: SAFE EXPRESSION EVALUATION ===
 
+def _validate_expression_syntax(expression: str) -> None:
+    """Provide specific error messages for common syntax errors."""
+    clean_expr = expression.replace(" ", "").lower()
+
+    # Check for common function syntax issues
+    if "pow(" in clean_expr and "," not in clean_expr:
+        raise ValueError("Function 'pow()' requires two parameters: pow(base, exponent). Example: pow(2, 3)")
+
+    # Check for missing parameters in other functions
+    single_param_funcs = ["sin", "cos", "tan", "log", "sqrt", "abs"]
+    for func in single_param_funcs:
+        if f"{func}(" in clean_expr:
+            # Basic check for opening but no closing parenthesis
+            if clean_expr.count(f"{func}(") != clean_expr.count(")"):
+                raise ValueError(f"Function '{func}()' requires one parameter. Example: {func}(3.14)")
+
 def safe_eval_expression(expression: str) -> float:
     """Safely evaluate mathematical expressions with restricted scope."""
+    # Validate syntax and provide helpful error messages
+    _validate_expression_syntax(expression)
+
     # Remove whitespace
     clean_expr = expression.replace(" ", "")
 
-    # Only allow safe characters
-    allowed_chars = set("0123456789+-*/.()e")
+    # Only allow safe characters (including comma for function parameters)
+    allowed_chars = set("0123456789+-*/.(),e")
     allowed_functions = {"sin", "cos", "tan", "log", "sqrt", "abs", "pow"}
 
     # Security check - log and block dangerous patterns
@@ -534,6 +553,44 @@ def get_math_constant(constant: str) -> str:
 
     const_info = constants[constant]
     return f"{constant}: {const_info['value']}\nDescription: {const_info['description']}"
+
+
+@mcp.resource("math://functions")
+def list_available_functions() -> str:
+    """List all available mathematical functions with examples and syntax help."""
+    return """# Available Mathematical Functions
+
+## Basic Functions
+- **abs(x)**: Absolute value
+  - Example: abs(-5) = 5.0
+
+## Trigonometric Functions
+- **sin(x)**: Sine (input in radians)
+  - Example: sin(3.14159/2) ≈ 1.0
+- **cos(x)**: Cosine (input in radians)
+  - Example: cos(0) = 1.0
+- **tan(x)**: Tangent (input in radians)
+  - Example: tan(3.14159/4) ≈ 1.0
+
+## Mathematical Functions
+- **sqrt(x)**: Square root
+  - Example: sqrt(16) = 4.0
+- **log(x)**: Natural logarithm
+  - Example: log(2.71828) ≈ 1.0
+- **pow(x, y)**: x raised to the power of y
+  - Example: pow(2, 3) = 8.0
+
+## Usage Notes
+- All functions use parentheses: function(parameter)
+- Multi-parameter functions use commas: pow(base, exponent)
+- Use operators for basic math: +, -, *, /, **
+- Parentheses for grouping: (2 + 3) * 4
+
+## Examples
+- Simple: 2 + 3 * 4 = 14.0
+- Functions: sqrt(16) + pow(2, 3) = 12.0
+- Complex: sin(3.14159/2) + cos(0) = 2.0
+"""
 
 
 @mcp.resource("math://history")
