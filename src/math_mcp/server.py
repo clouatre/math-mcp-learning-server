@@ -92,13 +92,12 @@ def _validate_expression_syntax(expression: str) -> None:
     if "pow(" in clean_expr and "," not in clean_expr:
         raise ValueError("Function 'pow()' requires two parameters: pow(base, exponent). Example: pow(2, 3)")
 
-    # Check for missing parameters in other functions
+    # Check for empty function calls (functions with no parameters)
     single_param_funcs = ["sin", "cos", "tan", "log", "sqrt", "abs"]
     for func in single_param_funcs:
-        if f"{func}(" in clean_expr:
-            # Basic check for opening but no closing parenthesis
-            if clean_expr.count(f"{func}(") != clean_expr.count(")"):
-                raise ValueError(f"Function '{func}()' requires one parameter. Example: {func}(3.14)")
+        empty_call = f"{func}()"
+        if empty_call in clean_expr:
+            raise ValueError(f"Function '{func}()' requires one parameter. Example: {func}(3.14)")
 
 def safe_eval_expression(expression: str) -> float:
     """Safely evaluate mathematical expressions with restricted scope."""
