@@ -199,8 +199,14 @@ def _classify_expression_topic(expression: str) -> str:
     else:
         return "arithmetic"
 
-@mcp.tool()
-def calculate(
+@mcp.tool(
+    annotations={
+        "title": "Mathematical Calculator",
+        "readOnlyHint": False,
+        "openWorldHint": True
+    }
+)
+async def calculate(
     expression: str,
     ctx: Context
 ):
@@ -214,6 +220,9 @@ def calculate(
     - "sqrt(16)" → 4.0
     - "sin(3.14159/2)" → 1.0
     """
+    # FastMCP 2.0 Context logging best practice
+    await ctx.info(f"Calculating expression: {expression}")
+
     result = safe_eval_expression(expression)
     timestamp = datetime.now().isoformat()
     difficulty = _classify_expression_difficulty(expression)
@@ -243,7 +252,13 @@ def calculate(
     }
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations={
+        "title": "Statistical Analysis",
+        "readOnlyHint": True,
+        "openWorldHint": False
+    }
+)
 def statistics(
     numbers: list[float],
     operation: str
@@ -398,8 +413,14 @@ def convert_units(
     }
 
 
-@mcp.tool()
-def save_calculation(
+@mcp.tool(
+    annotations={
+        "title": "Save Calculation to Workspace",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def save_calculation(
     name: str,
     expression: str,
     result: float,
@@ -416,6 +437,8 @@ def save_calculation(
         save_calculation("portfolio_return", "10000 * 1.07^5", 14025.52)
         save_calculation("circle_area", "pi * 5^2", 78.54)
     """
+    # FastMCP 2.0 Context logging
+    await ctx.info(f"Saving calculation '{name}' = {result}")
     # Validate inputs
     if not name.strip():
         raise ValueError("Variable name cannot be empty")
@@ -465,7 +488,7 @@ def save_calculation(
 
 
 @mcp.tool()
-def load_variable(
+async def load_variable(
     name: str,
     ctx: Context
 ):
@@ -478,6 +501,8 @@ def load_variable(
         load_variable("portfolio_return")  # Returns saved calculation
         load_variable("circle_area")       # Access across sessions
     """
+    # FastMCP 2.0 Context logging
+    await ctx.info(f"Loading variable '{name}'")
     from .persistence.workspace import _workspace_manager
     result_data = _workspace_manager.load_variable(name)
 
@@ -530,11 +555,18 @@ def load_variable(
 # === RESOURCES: DATA EXPOSURE ===
 
 @mcp.resource("math://test")
-def simple_test() -> str:
+async def simple_test(ctx: Context) -> str:
     """Simple test resource like FastMCP examples"""
-    return "✅ Test resource working!"
+    await ctx.info("Accessing test resource")
+    return "Test resource working successfully!"
 
-@mcp.resource("math://constants/{constant}")
+@mcp.resource(
+    "math://constants/{constant}",
+    annotations={
+        "readOnlyHint": True,
+        "idempotentHint": True
+    }
+)
 def get_math_constant(constant: str) -> str:
     """Get mathematical constants like pi, e, golden ratio, etc."""
     constants = {
@@ -555,8 +587,9 @@ def get_math_constant(constant: str) -> str:
 
 
 @mcp.resource("math://functions")
-def list_available_functions() -> str:
+async def list_available_functions(ctx: Context) -> str:
     """List all available mathematical functions with examples and syntax help."""
+    await ctx.info("Accessing function reference documentation")
     return """# Available Mathematical Functions
 
 ## Basic Functions
@@ -593,14 +626,12 @@ def list_available_functions() -> str:
 
 
 @mcp.resource("math://history")
-def get_calculation_history() -> str:
-    """Get the history of calculations performed in this session.
-
-    Note: Shows persistent workspace history since session context not available in resources.
-    """
+async def get_calculation_history(ctx: Context) -> str:
+    """Get the history of calculations performed across sessions."""
+    await ctx.info("Accessing calculation history")
     from .persistence.workspace import _workspace_manager
 
-    # Get workspace history since session context isn't available
+    # Get workspace history
     workspace_data = _workspace_manager._load_workspace()
 
     if not workspace_data.variables:
@@ -621,14 +652,21 @@ def get_calculation_history() -> str:
     return history_text
 
 
-@mcp.resource("math://workspace")
-def get_workspace() -> str:
+@mcp.resource(
+    "math://workspace",
+    annotations={
+        "readOnlyHint": True,
+        "idempotentHint": False
+    }
+)
+async def get_workspace(ctx: Context) -> str:
     """Get persistent calculation workspace showing all saved variables.
 
     This resource displays the complete state of the persistent workspace,
     including all saved calculations, metadata, and statistics. The workspace
     survives server restarts and is accessible across different transport modes.
     """
+    await ctx.info("Accessing persistent workspace")
     from .persistence.workspace import _workspace_manager
     return _workspace_manager.get_workspace_summary()
 

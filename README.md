@@ -29,7 +29,7 @@ Perfect for learning MCP fundamentals, demonstrating enterprise-grade patterns, 
 
 ## Built with FastMCP 2.0
 
-This server is built using [FastMCP 2.0](https://gofastmcp.com/integrations/anthropic) with the official [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk) for rapid development and clean code architecture.
+This server is built using [FastMCP 2.0](https://github.com/jlowin/fastmcp) with the official [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk) for rapid development and clean code architecture.
 
 ## Available Tools
 

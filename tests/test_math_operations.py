@@ -70,23 +70,29 @@ def test_temperature_conversions():
 
 # === FASTMCP TOOL TESTS ===
 
-def test_calculate_tool():
+@pytest.mark.asyncio
+async def test_calculate_tool():
     """Test the calculate tool returns structured output with annotations."""
-    # Mock context for calculation history (tool doesn't actually use it in this test)
-    class MockContext:
+    # Mock context for calculation history
+    class MockLifespanContext:
         def __init__(self):
-            self.request_context = MockRequestContext()
+            self.calculation_history = []
 
     class MockRequestContext:
         def __init__(self):
             self.lifespan_context = MockLifespanContext()
 
-    class MockLifespanContext:
+    class MockContext:
         def __init__(self):
-            self.calculation_history = []
+            self.request_context = MockRequestContext()
+            self.info_logs = []
+
+        async def info(self, message: str):
+            """Mock info logging."""
+            self.info_logs.append(message)
 
     ctx = MockContext()
-    result = calculate("2 + 3", ctx)
+    result = await calculate.fn("2 + 3", ctx)
 
     assert isinstance(result, dict)
     assert "content" in result
@@ -102,7 +108,7 @@ def test_calculate_tool():
 def test_statistics_tool():
     """Test the statistics tool with various operations."""
     # Test mean
-    result = stats_tool([1, 2, 3, 4, 5], "mean")
+    result = stats_tool.fn([1, 2, 3, 4, 5], "mean")
     assert isinstance(result, dict)
     assert "content" in result
     content = result["content"][0]
@@ -113,22 +119,22 @@ def test_statistics_tool():
     assert content["annotations"]["sample_size"] == 5
 
     # Test median
-    result = stats_tool([1, 2, 3, 4, 5], "median")
+    result = stats_tool.fn([1, 2, 3, 4, 5], "median")
     assert "Median" in result["content"][0]["text"]
     assert "3.0" in result["content"][0]["text"]
 
     # Test empty list
     with pytest.raises(ValueError, match="Cannot calculate statistics on empty list"):
-        stats_tool([], "mean")
+        stats_tool.fn([], "mean")
 
     # Test invalid operation
     with pytest.raises(ValueError, match="Unknown operation"):
-        stats_tool([1, 2, 3], "invalid_op")
+        stats_tool.fn([1, 2, 3], "invalid_op")
 
 
 def test_compound_interest_tool():
     """Test compound interest calculations."""
-    result = compound_interest(1000.0, 0.05, 5.0, 12)
+    result = compound_interest.fn(1000.0, 0.05, 5.0, 12)
 
     assert isinstance(result, dict)
     assert "content" in result
@@ -141,16 +147,16 @@ def test_compound_interest_tool():
 
     # Test validation errors
     with pytest.raises(ValueError, match="Principal must be greater than 0"):
-        compound_interest(0, 0.05, 5.0)
+        compound_interest.fn(0, 0.05, 5.0)
 
     with pytest.raises(ValueError, match="Interest rate cannot be negative"):
-        compound_interest(1000, -0.01, 5.0)
+        compound_interest.fn(1000, -0.01, 5.0)
 
 
 def test_convert_units_tool():
     """Test unit conversion tool."""
     # Test length conversion
-    result = convert_units(100, "cm", "m", "length")
+    result = convert_units.fn(100, "cm", "m", "length")
 
     assert isinstance(result, dict)
     assert "content" in result
@@ -162,12 +168,12 @@ def test_convert_units_tool():
     assert content["annotations"]["to_unit"] == "m"
 
     # Test temperature conversion
-    result = convert_units(0, "c", "f", "temperature")
+    result = convert_units.fn(0, "c", "f", "temperature")
     assert "32" in result["content"][0]["text"]
 
     # Test invalid unit type
     with pytest.raises(ValueError, match="Unknown unit type"):
-        convert_units(100, "cm", "m", "invalid_type")
+        convert_units.fn(100, "cm", "m", "invalid_type")
 
 
 # === RESOURCE TESTS ===
@@ -175,13 +181,13 @@ def test_convert_units_tool():
 def test_math_constants_resource():
     """Test math constants resource."""
     # Test known constant
-    result = get_math_constant("pi")
+    result = get_math_constant.fn("pi")
     assert "pi:" in result
     assert "3.14159" in result
     assert "Description:" in result
 
     # Test unknown constant
-    result = get_math_constant("unknown_constant")
+    result = get_math_constant.fn("unknown_constant")
     assert "Unknown constant" in result
     assert "Available constants:" in result
 
@@ -221,26 +227,26 @@ def test_complex_calculations():
 def test_statistical_edge_cases():
     """Test statistical functions with edge cases."""
     # Single value
-    result = stats_tool([42.0], "mean")
+    result = stats_tool.fn([42.0], "mean")
     assert "42.0" in result["content"][0]["text"]
 
     # Standard deviation with single value
-    result = stats_tool([42.0], "std_dev")
+    result = stats_tool.fn([42.0], "std_dev")
     assert "0" in result["content"][0]["text"]  # Should not raise error
 
     # Variance with single value
-    result = stats_tool([42.0], "variance")
+    result = stats_tool.fn([42.0], "variance")
     assert "0" in result["content"][0]["text"]  # Should not raise error
 
 
 def test_unit_conversion_edge_cases():
     """Test unit conversions with various edge cases."""
     # Convert to same unit
-    result = convert_units(100, "m", "m", "length")
+    result = convert_units.fn(100, "m", "m", "length")
     assert "100 m = 100 m" in result["content"][0]["text"]
 
     # Test case insensitivity
-    result = convert_units(1, "M", "KM", "length")
+    result = convert_units.fn(1, "M", "KM", "length")
     assert "0.001" in result["content"][0]["text"]
 
 
