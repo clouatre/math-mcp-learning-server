@@ -1,6 +1,6 @@
 [project]
 name = "math-mcp-learning-server"
-version = "0.3.1"
+version = "0.3.2"
 description = "Educational MCP server demonstrating FastMCP 2.0 best practices - Complete learning guide with contributing guidelines and roadmap for Model Context Protocol development"
 readme = "README.md"
 requires-python = ">=3.12"
