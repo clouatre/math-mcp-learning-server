@@ -240,14 +240,84 @@ We use [Semantic Versioning](https://semver.org/):
 - Minor: New features (backward compatible)
 - Patch: Bug fixes
 
-### **Release Steps**
-```bash
-# Tag the release
-git tag -a v1.2.0 -m "Add matrix operations and enhanced statistics"
-git push origin v1.2.0
+### **Automated Release Steps**
 
-# Create GitHub release with changelog
+The project uses **PyPI Trusted Publishing** for automated, secure releases. No API tokens required!
+
+#### **1. Create GitHub Release**
+```bash
+# For production releases
+gh release create v1.2.0 \
+  --title "v1.2.0 - Add matrix operations" \
+  --notes-file RELEASE_NOTES_v1.2.0.md
+
+# For pre-releases (testing)
+gh release create v1.2.0-rc1 \
+  --title "v1.2.0-rc1 - Release Candidate" \
+  --notes-file RELEASE_NOTES_v1.2.0.md \
+  --prerelease
 ```
+
+#### **2. Automated Workflow Runs**
+Once the release is published, GitHub Actions automatically:
+
+1. ✅ **Runs test suite** - Ensures code quality
+2. ✅ **Builds package** - Creates wheel and sdist
+3. ✅ **Publishes to PyPI** - Using Trusted Publishing (no tokens!)
+
+#### **3. Monitor Progress**
+- Watch workflow: https://github.com/huguesclouatre/math-mcp-learning-server/actions
+- Check PyPI: https://pypi.org/project/math-mcp-learning-server/
+
+#### **4. Verify Release**
+```bash
+# Test installation
+pip install math-mcp-learning-server==1.2.0
+
+# Or with uv
+uv add math-mcp-learning-server==1.2.0
+```
+
+### **Manual Publishing (Emergency Only)**
+
+If automated publishing fails:
+
+```bash
+# Build package
+uv build
+
+# Publish with API token
+uv publish --token $PYPI_API_TOKEN
+```
+
+**Note:** Trusted Publishing is strongly preferred for security.
+
+### **First-Time Setup**
+
+For new maintainers, PyPI Trusted Publishing must be configured once:
+
+1. See [PyPI Trusted Publishing Configuration](.github/PYPI_TRUSTED_PUBLISHING.md)
+2. Configure at: https://pypi.org/manage/project/math-mcp-learning-server/settings/publishing/
+3. Add GitHub Actions as trusted publisher
+
+### **Troubleshooting Releases**
+
+**Tests Fail:**
+- Fix issues locally
+- Push to main
+- Create new release
+
+**Build Fails:**
+- Check GitHub Actions logs
+- Verify `pyproject.toml` is valid
+- Ensure `uv.lock` is up to date
+
+**Publish Fails:**
+- Verify PyPI Trusted Publisher is configured correctly
+- Check `.github/workflows/python-publish.yml` has `id-token: write`
+- Ensure environment `pypi` exists in GitHub settings
+
+For detailed troubleshooting, see [PyPI Trusted Publishing docs](.github/PYPI_TRUSTED_PUBLISHING.md).
 
 ## 📚 **Useful Resources**
 
