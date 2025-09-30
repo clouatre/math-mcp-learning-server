@@ -209,7 +209,7 @@ def _classify_expression_topic(expression: str) -> str:
 async def calculate(
     expression: str,
     ctx: Context
-):
+) -> dict[str, Any]:
     """Safely evaluate mathematical expressions with support for basic operations and math functions.
 
     Supported operations: +, -, *, /, **, ()
@@ -259,14 +259,18 @@ async def calculate(
         "openWorldHint": False
     }
 )
-def statistics(
+async def statistics(
     numbers: list[float],
-    operation: str
-):
+    operation: str,
+    ctx: Context
+) -> dict[str, Any]:
     """Perform statistical calculations on a list of numbers.
 
     Available operations: mean, median, mode, std_dev, variance
     """
+    # FastMCP 2.0 Context logging - demonstrates async operation with user feedback
+    await ctx.info(f"Performing {operation} on {len(numbers)} data points")
+
     import statistics as stats  # Import with alias to avoid naming conflict
 
     if not numbers:
@@ -308,12 +312,13 @@ def statistics(
 
 
 @mcp.tool()
-def compound_interest(
+async def compound_interest(
     principal: float,
     rate: float,
     time: float,
-    compounds_per_year: int = 1
-):
+    compounds_per_year: int = 1,
+    ctx: Context = None  # type: ignore[assignment]
+) -> dict[str, Any]:
     """Calculate compound interest for investments.
 
     Formula: A = P(1 + r/n)^(nt)
@@ -323,6 +328,10 @@ def compound_interest(
     - n = number of times interest compounds per year
     - t = time in years
     """
+    # FastMCP 2.0 Context logging - provides visibility into financial calculations
+    if ctx:
+        await ctx.info(f"Calculating compound interest: ${principal:,.2f} @ {rate*100}% for {time} years")
+
     if principal <= 0:
         raise ValueError("Principal must be greater than 0")
     if rate < 0:
@@ -353,12 +362,13 @@ def compound_interest(
 
 
 @mcp.tool()
-def convert_units(
+async def convert_units(
     value: float,
     from_unit: str,
     to_unit: str,
-    unit_type: str
-):
+    unit_type: str,
+    ctx: Context = None  # type: ignore[assignment]
+) -> dict[str, Any]:
     """Convert between different units of measurement.
 
     Supported unit types:
@@ -366,6 +376,10 @@ def convert_units(
     - weight: g, kg, oz, lb
     - temperature: c, f, k (Celsius, Fahrenheit, Kelvin)
     """
+    # FastMCP 2.0 Context logging - tracks conversion operations for educational purposes
+    if ctx:
+        await ctx.info(f"Converting {value} {from_unit} to {to_unit} ({unit_type})")
+
     # Conversion tables (to base units)
     conversions = {
         "length": {  # to millimeters
@@ -425,7 +439,7 @@ async def save_calculation(
     expression: str,
     result: float,
     ctx: Context
-):
+) -> dict[str, Any]:
     """Save calculation to persistent workspace (survives restarts).
 
     Args:
@@ -491,7 +505,7 @@ async def save_calculation(
 async def load_variable(
     name: str,
     ctx: Context
-):
+) -> dict[str, Any]:
     """Load previously saved calculation result from workspace.
 
     Args:
@@ -733,7 +747,7 @@ Make your explanation clear and educational, suitable for someone learning about
 
 # === MAIN ENTRY POINT ===
 
-def main():
+def main() -> None:
     """Main entry point supporting multiple transports."""
     import sys
     from typing import cast, Literal
