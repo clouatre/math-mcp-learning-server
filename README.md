@@ -21,6 +21,11 @@ Perfect for learning MCP fundamentals, demonstrating enterprise-grade patterns, 
 - **Financial Calculations**: Compound interest calculations with formatted output
 - **Unit Conversions**: Length, weight, and temperature conversions
 
+### 📊 Visual Learning (Optional)
+- **Function Plotting**: Generate mathematical function plots with base64-encoded PNG output
+- **Statistical Histograms**: Visualize data distributions with mean and median indicators
+- **Graceful Degradation**: Optional matplotlib integration with helpful install messages
+
 ### 🔒 Enterprise-Grade Quality
 - **Security Logging**: Monitor and log potentially dangerous expression attempts
 - **Type Safety**: Full Pydantic validation for inputs and structured content responses
@@ -110,6 +115,53 @@ Convert between different units of measurement.
 - **Length**: mm, cm, m, km, in, ft, yd, mi
 - **Weight**: g, kg, oz, lb
 - **Temperature**: c, f, k (Celsius, Fahrenheit, Kelvin)
+
+### 📊 Visualization Tools (Optional)
+
+#### `plot_function`
+Generate mathematical function plots for visual learning.
+
+**Example:**
+```json
+{
+  "expression": "x**2",
+  "x_range": [-5, 5],
+  "num_points": 100
+}
+```
+
+**Features:**
+- Base64-encoded PNG output
+- Automatic domain error handling
+- Educational annotations
+- Grid and axis labels
+
+#### `create_histogram`
+Create statistical histograms with distribution analysis.
+
+**Example:**
+```json
+{
+  "data": [1, 2, 2, 3, 3, 3, 4, 4, 5],
+  "bins": 5,
+  "title": "Test Scores Distribution"
+}
+```
+
+**Features:**
+- Statistical indicators (mean, median)
+- Base64-encoded PNG output
+- Comprehensive annotations
+- Visual data analysis
+
+**Installation for visualization:**
+```bash
+# Install with plotting support
+pip install math-mcp-learning-server[plotting]
+
+# Or for development
+uv sync --extra plotting
+```
 
 ## Available Resources
 
