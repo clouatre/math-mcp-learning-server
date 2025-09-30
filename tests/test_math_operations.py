@@ -105,10 +105,22 @@ async def test_calculate_tool():
     assert content["annotations"]["topic"] == "arithmetic"
 
 
-def test_statistics_tool():
+@pytest.mark.asyncio
+async def test_statistics_tool():
     """Test the statistics tool with various operations."""
+    # Mock context
+    class MockContext:
+        def __init__(self):
+            self.info_logs = []
+
+        async def info(self, message: str):
+            """Mock info logging."""
+            self.info_logs.append(message)
+
+    ctx = MockContext()
+
     # Test mean
-    result = stats_tool.fn([1, 2, 3, 4, 5], "mean")
+    result = await stats_tool.fn([1, 2, 3, 4, 5], "mean", ctx)
     assert isinstance(result, dict)
     assert "content" in result
     content = result["content"][0]
@@ -119,22 +131,33 @@ def test_statistics_tool():
     assert content["annotations"]["sample_size"] == 5
 
     # Test median
-    result = stats_tool.fn([1, 2, 3, 4, 5], "median")
+    result = await stats_tool.fn([1, 2, 3, 4, 5], "median", ctx)
     assert "Median" in result["content"][0]["text"]
     assert "3.0" in result["content"][0]["text"]
 
     # Test empty list
     with pytest.raises(ValueError, match="Cannot calculate statistics on empty list"):
-        stats_tool.fn([], "mean")
+        await stats_tool.fn([], "mean", ctx)
 
     # Test invalid operation
     with pytest.raises(ValueError, match="Unknown operation"):
-        stats_tool.fn([1, 2, 3], "invalid_op")
+        await stats_tool.fn([1, 2, 3], "invalid_op", ctx)
 
 
-def test_compound_interest_tool():
+@pytest.mark.asyncio
+async def test_compound_interest_tool():
     """Test compound interest calculations."""
-    result = compound_interest.fn(1000.0, 0.05, 5.0, 12)
+    # Mock context
+    class MockContext:
+        def __init__(self):
+            self.info_logs = []
+
+        async def info(self, message: str):
+            """Mock info logging."""
+            self.info_logs.append(message)
+
+    ctx = MockContext()
+    result = await compound_interest.fn(1000.0, 0.05, 5.0, 12, ctx)
 
     assert isinstance(result, dict)
     assert "content" in result
@@ -147,16 +170,28 @@ def test_compound_interest_tool():
 
     # Test validation errors
     with pytest.raises(ValueError, match="Principal must be greater than 0"):
-        compound_interest.fn(0, 0.05, 5.0)
+        await compound_interest.fn(0, 0.05, 5.0, 1, ctx)
 
     with pytest.raises(ValueError, match="Interest rate cannot be negative"):
-        compound_interest.fn(1000, -0.01, 5.0)
+        await compound_interest.fn(1000, -0.01, 5.0, 1, ctx)
 
 
-def test_convert_units_tool():
+@pytest.mark.asyncio
+async def test_convert_units_tool():
     """Test unit conversion tool."""
+    # Mock context
+    class MockContext:
+        def __init__(self):
+            self.info_logs = []
+
+        async def info(self, message: str):
+            """Mock info logging."""
+            self.info_logs.append(message)
+
+    ctx = MockContext()
+
     # Test length conversion
-    result = convert_units.fn(100, "cm", "m", "length")
+    result = await convert_units.fn(100, "cm", "m", "length", ctx)
 
     assert isinstance(result, dict)
     assert "content" in result
@@ -168,12 +203,12 @@ def test_convert_units_tool():
     assert content["annotations"]["to_unit"] == "m"
 
     # Test temperature conversion
-    result = convert_units.fn(0, "c", "f", "temperature")
+    result = await convert_units.fn(0, "c", "f", "temperature", ctx)
     assert "32" in result["content"][0]["text"]
 
     # Test invalid unit type
     with pytest.raises(ValueError, match="Unknown unit type"):
-        convert_units.fn(100, "cm", "m", "invalid_type")
+        await convert_units.fn(100, "cm", "m", "invalid_type", ctx)
 
 
 # === RESOURCE TESTS ===
@@ -224,29 +259,53 @@ def test_complex_calculations():
     assert abs(result - 150.0) < 1e-10
 
 
-def test_statistical_edge_cases():
+@pytest.mark.asyncio
+async def test_statistical_edge_cases():
     """Test statistical functions with edge cases."""
+    # Mock context
+    class MockContext:
+        def __init__(self):
+            self.info_logs = []
+
+        async def info(self, message: str):
+            """Mock info logging."""
+            self.info_logs.append(message)
+
+    ctx = MockContext()
+
     # Single value
-    result = stats_tool.fn([42.0], "mean")
+    result = await stats_tool.fn([42.0], "mean", ctx)
     assert "42.0" in result["content"][0]["text"]
 
     # Standard deviation with single value
-    result = stats_tool.fn([42.0], "std_dev")
+    result = await stats_tool.fn([42.0], "std_dev", ctx)
     assert "0" in result["content"][0]["text"]  # Should not raise error
 
     # Variance with single value
-    result = stats_tool.fn([42.0], "variance")
+    result = await stats_tool.fn([42.0], "variance", ctx)
     assert "0" in result["content"][0]["text"]  # Should not raise error
 
 
-def test_unit_conversion_edge_cases():
+@pytest.mark.asyncio
+async def test_unit_conversion_edge_cases():
     """Test unit conversions with various edge cases."""
+    # Mock context
+    class MockContext:
+        def __init__(self):
+            self.info_logs = []
+
+        async def info(self, message: str):
+            """Mock info logging."""
+            self.info_logs.append(message)
+
+    ctx = MockContext()
+
     # Convert to same unit
-    result = convert_units.fn(100, "m", "m", "length")
+    result = await convert_units.fn(100, "m", "m", "length", ctx)
     assert "100 m = 100 m" in result["content"][0]["text"]
 
     # Test case insensitivity
-    result = convert_units.fn(1, "M", "KM", "length")
+    result = await convert_units.fn(1, "M", "KM", "length", ctx)
     assert "0.001" in result["content"][0]["text"]
 
 
