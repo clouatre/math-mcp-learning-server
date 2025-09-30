@@ -566,6 +566,280 @@ async def load_variable(
     }
 
 
+@mcp.tool(
+    annotations={
+        "title": "Function Plotter",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def plot_function(
+    expression: str,
+    x_range: tuple[float, float],
+    num_points: int = 100,
+    ctx: Context | None = None
+) -> dict[str, Any]:
+    """Generate mathematical function plots (requires matplotlib).
+
+    Args:
+        expression: Mathematical expression to plot (e.g., "x**2", "sin(x)")
+        x_range: Tuple of (min, max) for x-axis range
+        num_points: Number of points to plot (default: 100)
+        ctx: FastMCP context for logging
+
+    Returns:
+        Dict with base64-encoded PNG image or error message
+
+    Examples:
+        plot_function("x**2", (-5, 5))
+        plot_function("sin(x)", (-3.14, 3.14))
+    """
+    # Try importing optional dependencies
+    try:
+        import matplotlib
+        matplotlib.use('Agg')  # Non-interactive backend
+        import matplotlib.pyplot as plt
+        import numpy as np
+    except ImportError:
+        return {
+            "content": [{
+                "type": "text",
+                "text": "**Matplotlib not available**\n\nInstall with: `pip install math-mcp-learning-server[plotting]`\n\nOr for development: `uv sync --extra plotting`",
+                "annotations": {
+                    "error": "missing_dependency",
+                    "install_command": "pip install math-mcp-learning-server[plotting]",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+    # FastMCP 2.0 Context logging
+    if ctx:
+        await ctx.info(f"Plotting function: {expression} over range {x_range}")
+
+    try:
+        # Validate x_range
+        x_min, x_max = x_range
+        if x_min >= x_max:
+            raise ValueError("x_range minimum must be less than maximum")
+        if num_points < 2:
+            raise ValueError("num_points must be at least 2")
+
+        # Generate x values
+        x_values = np.linspace(x_min, x_max, num_points)
+
+        # Evaluate expression for each x value
+        y_values = []
+        for x in x_values:
+            # Replace x in expression with actual value
+            expr_with_value = expression.replace('x', f'({x})')
+            try:
+                y = safe_eval_expression(expr_with_value)
+                y_values.append(y)
+            except ValueError:
+                # Handle domain errors (like sqrt of negative)
+                y_values.append(float('nan'))
+
+        # Create figure and plot
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.plot(x_values, y_values, linewidth=2, color='#2E86AB')
+        ax.set_xlabel('x', fontsize=12)
+        ax.set_ylabel('f(x)', fontsize=12)
+        ax.set_title(f'Plot of f(x) = {expression}', fontsize=14, fontweight='bold')
+        ax.grid(True, alpha=0.3)
+        ax.axhline(y=0, color='k', linewidth=0.5)
+        ax.axvline(x=0, color='k', linewidth=0.5)
+
+        # Save to base64
+        from io import BytesIO
+        import base64
+
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+        plt.close(fig)
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+
+        # Classify difficulty
+        difficulty = _classify_expression_difficulty(expression)
+
+        return {
+            "content": [{
+                "type": "image",
+                "data": image_base64,
+                "mimeType": "image/png",
+                "annotations": {
+                    "difficulty": difficulty,
+                    "topic": "visualization",
+                    "expression": expression,
+                    "x_range": f"[{x_min}, {x_max}]",
+                    "num_points": num_points,
+                    "educational_note": "Function plotting visualizes mathematical relationships"
+                }
+            }]
+        }
+
+    except ValueError as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Plot Error:** {str(e)}\n\nPlease check your expression and x_range values.",
+                "annotations": {
+                    "error": "plot_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+    except Exception as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Unexpected Error:** {str(e)}",
+                "annotations": {
+                    "error": "unexpected_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+
+@mcp.tool(
+    annotations={
+        "title": "Statistical Histogram",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def create_histogram(
+    data: list[float],
+    bins: int = 20,
+    title: str = "Data Distribution",
+    ctx: Context | None = None
+) -> dict[str, Any]:
+    """Create statistical histograms (requires matplotlib).
+
+    Args:
+        data: List of numerical values
+        bins: Number of histogram bins (default: 20)
+        title: Chart title
+        ctx: FastMCP context for logging
+
+    Returns:
+        Dict with base64-encoded PNG image or error message
+
+    Examples:
+        create_histogram([1, 2, 2, 3, 3, 3, 4, 4, 5], bins=5)
+    """
+    # Try importing optional dependencies
+    try:
+        import matplotlib
+        matplotlib.use('Agg')  # Non-interactive backend
+        import matplotlib.pyplot as plt
+        import numpy  # noqa: F401 - imported for side effects, required by matplotlib
+    except ImportError:
+        return {
+            "content": [{
+                "type": "text",
+                "text": "**Matplotlib not available**\n\nInstall with: `pip install math-mcp-learning-server[plotting]`\n\nOr for development: `uv sync --extra plotting`",
+                "annotations": {
+                    "error": "missing_dependency",
+                    "install_command": "pip install math-mcp-learning-server[plotting]",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+    # FastMCP 2.0 Context logging
+    if ctx:
+        await ctx.info(f"Creating histogram with {len(data)} data points and {bins} bins")
+
+    try:
+        # Validate inputs
+        if not data:
+            raise ValueError("Cannot create histogram with empty data")
+        if len(data) == 1:
+            raise ValueError("Histogram requires at least 2 data points")
+        if bins < 1:
+            raise ValueError("bins must be at least 1")
+
+        # Calculate statistics
+        import statistics as stats
+        mean_val = stats.mean(data)
+        median_val = stats.median(data)
+        std_dev = stats.stdev(data) if len(data) > 1 else 0
+
+        # Create histogram
+        fig, ax = plt.subplots(figsize=(10, 6))
+        n, bins_edges, patches = ax.hist(data, bins=bins, color='#A23B72', alpha=0.7, edgecolor='black')
+
+        # Add vertical lines for mean and median
+        ax.axvline(mean_val, color='#F18F01', linestyle='--', linewidth=2, label=f'Mean: {mean_val:.2f}')
+        ax.axvline(median_val, color='#C73E1D', linestyle='-.', linewidth=2, label=f'Median: {median_val:.2f}')
+
+        ax.set_xlabel('Value', fontsize=12)
+        ax.set_ylabel('Frequency', fontsize=12)
+        ax.set_title(title, fontsize=14, fontweight='bold')
+        ax.legend()
+        ax.grid(True, alpha=0.3, axis='y')
+
+        # Save to base64
+        from io import BytesIO
+        import base64
+
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+        plt.close(fig)
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+
+        return {
+            "content": [{
+                "type": "image",
+                "data": image_base64,
+                "mimeType": "image/png",
+                "annotations": {
+                    "difficulty": "intermediate",
+                    "topic": "statistics",
+                    "data_points": len(data),
+                    "bins": bins,
+                    "mean": round(mean_val, 4),
+                    "median": round(median_val, 4),
+                    "std_dev": round(std_dev, 4),
+                    "educational_note": "Histograms show the distribution and frequency of data values"
+                }
+            }]
+        }
+
+    except ValueError as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Histogram Error:** {str(e)}\n\nPlease check your data and parameters.",
+                "annotations": {
+                    "error": "histogram_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+    except Exception as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Unexpected Error:** {str(e)}",
+                "annotations": {
+                    "error": "unexpected_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+
 # === RESOURCES: DATA EXPOSURE ===
 
 @mcp.resource("math://test")
