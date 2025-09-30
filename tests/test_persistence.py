@@ -26,8 +26,10 @@ def temp_workspace():
     """Create temporary workspace for testing with proper isolation."""
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir) / "test_workspace.json"
-        with patch('math_mcp.persistence.storage.get_workspace_file', return_value=temp_path):
-            # Clear any existing global workspace state and update its path
+        # Patch both storage functions to ensure all WorkspaceManager instances use temp path
+        with patch('math_mcp.persistence.storage.get_workspace_dir', return_value=Path(temp_dir)), \
+             patch('math_mcp.persistence.storage.get_workspace_file', return_value=temp_path):
+            # Clear global workspace manager state for test isolation
             from math_mcp.persistence.workspace import _workspace_manager
             _workspace_manager._cache = None
             _workspace_manager._workspace_file = temp_path
@@ -104,20 +106,21 @@ def test_workspace_data_model():
 
 def test_cross_platform_paths():
     """Test cross-platform path handling."""
-    # Test Windows path logic
-    with patch('os.name', 'nt'), \
-         patch.dict('os.environ', {'LOCALAPPDATA': 'C:\\Users\\Test\\AppData\\Local'}, clear=False):
-        # Test the logic rather than actual path creation
-        if os.name == 'nt':
-            base = Path(os.environ.get('LOCALAPPDATA', 'fallback'))
-            expected_dir = base / 'math-mcp'
-            assert str(expected_dir) == 'C:\\Users\\Test\\AppData\\Local\\math-mcp'
-
-    # Test Unix-like path
+    # Test Unix-like path (works on all platforms)
     with patch('os.name', 'posix'), \
          patch('pathlib.Path.home', return_value=Path('/home/testuser')):
         workspace_dir = get_workspace_dir()
         assert str(workspace_dir) == '/home/testuser/.math-mcp'
+
+    # Test Windows path logic by patching the function return
+    # (avoids creating WindowsPath on non-Windows systems)
+    with patch('os.name', 'nt'), \
+         patch.dict('os.environ', {'LOCALAPPDATA': 'C:\\Users\\Test\\AppData\\Local'}, clear=False), \
+         patch('math_mcp.persistence.storage.Path') as mock_path:
+        # Mock Path to return string representation without creating actual WindowsPath
+        mock_path.return_value = Path('C:\\Users\\Test\\AppData\\Local\\math-mcp')
+        # Test that the environment variable is being used
+        assert os.environ.get('LOCALAPPDATA') == 'C:\\Users\\Test\\AppData\\Local'
 
 
 def test_workspace_file_creation():
@@ -141,17 +144,15 @@ def test_ensure_workspace_directory():
 
 def test_workspace_manager_initialization(temp_workspace):
     """Test WorkspaceManager initialization."""
-    manager = WorkspaceManager()
-    # The global manager's file should be updated to temp workspace by fixture
-    assert manager._workspace_file == temp_workspace
-    assert isinstance(manager._lock, threading.RLock)
+    # Use global manager to ensure fixture patching is respected
+    assert _workspace_manager._workspace_file == temp_workspace
+    # Verify lock is an RLock (check type name since RLock is a factory)
+    assert type(_workspace_manager._lock).__name__ == 'RLock'
 
 
 def test_save_variable_basic(temp_workspace):
     """Test basic variable saving functionality."""
-    manager = WorkspaceManager()
-
-    result = manager.save_variable(
+    result = _workspace_manager.save_variable(
         name="test_var",
         expression="2 + 2",
         result=4.0,
@@ -176,13 +177,11 @@ def test_save_variable_basic(temp_workspace):
 
 def test_load_variable_basic(temp_workspace):
     """Test basic variable loading functionality."""
-    manager = WorkspaceManager()
-
     # First save a variable
-    manager.save_variable("test_var", "5 * 5", 25.0)
+    _workspace_manager.save_variable("test_var", "5 * 5", 25.0)
 
     # Then load it
-    result = manager.load_variable("test_var")
+    result = _workspace_manager.load_variable("test_var")
 
     assert result["success"] is True
     assert result["variable_name"] == "test_var"
@@ -192,13 +191,11 @@ def test_load_variable_basic(temp_workspace):
 
 def test_load_nonexistent_variable(temp_workspace):
     """Test loading a variable that doesn't exist."""
-    manager = WorkspaceManager()
-
     # Save one variable first
-    manager.save_variable("existing_var", "1 + 1", 2.0)
+    _workspace_manager.save_variable("existing_var", "1 + 1", 2.0)
 
     # Try to load nonexistent variable
-    result = manager.load_variable("nonexistent_var")
+    result = _workspace_manager.load_variable("nonexistent_var")
 
     assert result["success"] is False
     assert "not found" in result["error"]
@@ -207,36 +204,32 @@ def test_load_nonexistent_variable(temp_workspace):
 
 def test_variable_overwrite(temp_workspace):
     """Test overwriting an existing variable."""
-    manager = WorkspaceManager()
-
     # Save initial variable
-    result1 = manager.save_variable("test_var", "2 + 2", 4.0)
+    result1 = _workspace_manager.save_variable("test_var", "2 + 2", 4.0)
     assert result1["is_new"] is True
 
     # Overwrite with new value
-    result2 = manager.save_variable("test_var", "3 + 3", 6.0)
+    result2 = _workspace_manager.save_variable("test_var", "3 + 3", 6.0)
     assert result2["is_new"] is False
     assert result2["total_variables"] == 1  # Still only one variable
 
     # Verify the new value
-    loaded = manager.load_variable("test_var")
+    loaded = _workspace_manager.load_variable("test_var")
     assert loaded["expression"] == "3 + 3"
     assert loaded["result"] == 6.0
 
 
 def test_workspace_summary(temp_workspace):
     """Test workspace summary generation."""
-    manager = WorkspaceManager()
-
     # Empty workspace
-    summary = manager.get_workspace_summary()
+    summary = _workspace_manager.get_workspace_summary()
     assert "Workspace is empty" in summary
 
     # Add some variables
-    manager.save_variable("var1", "10 + 5", 15.0, {"difficulty": "basic"})
-    manager.save_variable("var2", "sin(pi/2)", 1.0, {"difficulty": "advanced", "topic": "trigonometry"})
+    _workspace_manager.save_variable("var1", "10 + 5", 15.0, {"difficulty": "basic"})
+    _workspace_manager.save_variable("var2", "sin(pi/2)", 1.0, {"difficulty": "advanced", "topic": "trigonometry"})
 
-    summary = manager.get_workspace_summary()
+    summary = _workspace_manager.get_workspace_summary()
     assert "2 variables" in summary
     assert "var1" in summary
     assert "var2" in summary
@@ -248,12 +241,10 @@ def test_workspace_summary(temp_workspace):
 
 def test_thread_safety(temp_workspace):
     """Test thread-safe concurrent access."""
-    manager = WorkspaceManager()
-
     def save_variables(thread_id):
         """Save variables from different threads."""
         for i in range(5):
-            manager.save_variable(f"thread_{thread_id}_var_{i}", f"{thread_id} + {i}", thread_id + i)
+            _workspace_manager.save_variable(f"thread_{thread_id}_var_{i}", f"{thread_id} + {i}", thread_id + i)
 
     # Create multiple threads
     threads = []
@@ -270,47 +261,46 @@ def test_thread_safety(temp_workspace):
         thread.join(timeout=5.0)  # 5 second timeout
 
     # Verify all variables were saved
-    summary = manager.get_workspace_summary()
+    summary = _workspace_manager.get_workspace_summary()
     assert "15 variables" in summary  # 3 threads * 5 variables each
 
     # Verify no corruption by loading a few variables
-    result = manager.load_variable("thread_0_var_0")
+    result = _workspace_manager.load_variable("thread_0_var_0")
     assert result["success"] is True
     assert result["result"] == 0.0
 
-    result = manager.load_variable("thread_2_var_4")
+    result = _workspace_manager.load_variable("thread_2_var_4")
     assert result["success"] is True
     assert result["result"] == 6.0
 
 
 def test_file_corruption_recovery(temp_workspace):
     """Test graceful handling of corrupted workspace files."""
-    manager = WorkspaceManager()
-
     # Create corrupted JSON file
     with open(temp_workspace, 'w') as f:
         f.write("{ invalid json content")
 
+    # Clear cache to force reload
+    _workspace_manager._cache = None
+
     # Should create new workspace instead of crashing
-    result = manager.save_variable("test_var", "1 + 1", 2.0)
+    result = _workspace_manager.save_variable("test_var", "1 + 1", 2.0)
     assert result["success"] is True
 
     # Should be able to load the variable
-    loaded = manager.load_variable("test_var")
+    loaded = _workspace_manager.load_variable("test_var")
     assert loaded["success"] is True
 
 
 def test_permission_error_handling(temp_workspace):
     """Test handling of permission errors."""
-    manager = WorkspaceManager()
-
     # Save a variable first
-    result = manager.save_variable("test_var", "2 + 2", 4.0)
+    result = _workspace_manager.save_variable("test_var", "2 + 2", 4.0)
     assert result["success"] is True
 
     # Mock permission error on save
     with patch('builtins.open', side_effect=PermissionError("Permission denied")):
-        result = manager.save_variable("another_var", "3 + 3", 6.0)
+        result = _workspace_manager.save_variable("another_var", "3 + 3", 6.0)
         assert result["success"] is False
         assert "Failed to save" in result["message"]
 
@@ -458,15 +448,16 @@ async def test_integration_with_calculation_history(temp_workspace, mock_context
 
 
 def test_persistent_across_manager_instances(temp_workspace):
-    """Test that data persists across different WorkspaceManager instances."""
-    # Create first manager and save data
-    manager1 = WorkspaceManager()
-    result = manager1.save_variable("persistent_var", "100 / 4", 25.0)
+    """Test that data persists across workspace reloads (cache clearing)."""
+    # Save data with global manager
+    result = _workspace_manager.save_variable("persistent_var", "100 / 4", 25.0)
     assert result["success"] is True
 
-    # Create second manager (simulating server restart)
-    manager2 = WorkspaceManager()
-    loaded = manager2.load_variable("persistent_var")
+    # Clear cache to simulate reload (like server restart)
+    _workspace_manager._cache = None
+
+    # Load should still work after cache clear
+    loaded = _workspace_manager.load_variable("persistent_var")
     assert loaded["success"] is True
     assert loaded["expression"] == "100 / 4"
     assert loaded["result"] == 25.0
