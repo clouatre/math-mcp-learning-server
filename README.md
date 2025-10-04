@@ -2,7 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/math-mcp-learning-server.svg)](https://pypi.org/project/math-mcp-learning-server/)
 
-**Try it now:** Live at [https://math-mcp-learning.fastmcp.app/mcp](https://math-mcp-learning.fastmcp.app/mcp) - no installation needed!
+**Try it now:** Connect your MCP client to [https://math-mcp-learning.fastmcp.app/mcp](https://math-mcp-learning.fastmcp.app/mcp) - no local installation needed!
 
 A persistent quantitative workspace built as a Model Context Protocol (MCP) server. This project demonstrates enterprise-grade patterns for MCP development, featuring cross-session state persistence - a unique capability that Claude Sonnet 4 cannot achieve natively.
 
@@ -28,7 +28,7 @@ Built with [FastMCP 2.0](https://github.com/jlowin/fastmcp) and the official [Mo
 
 ### Option 1: Try it Now (Cloud)
 
-Connect directly to the hosted server - no installation required!
+Connect your MCP client to the hosted server - no local installation required!
 
 **Claude Desktop:**
 ```json
