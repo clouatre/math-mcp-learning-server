@@ -1,0 +1,22 @@
+{
+  "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
+  "source": {
+    "type": "filesystem",
+    "path": "src/math_mcp/server.py",
+    "entrypoint": "mcp"
+  },
+  "environment": {
+    "type": "uv",
+    "python": ">=3.11",
+    "dependencies": [
+      "fastmcp>=2.0.0",
+      "pydantic>=2.11.9",
+      "matplotlib>=3.8.0",
+      "numpy>=1.26.0"
+    ]
+  },
+  "deployment": {
+    "transport": "http",
+    "log_level": "INFO"
+  }
+}
