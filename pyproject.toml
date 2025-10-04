@@ -1,6 +1,6 @@
 [project]
 name = "math-mcp-learning-server"
-version = "0.7.5"
+version = "0.8.0"
 description = "Production-ready educational MCP server with enhanced visualizations and persistent workspace - Complete learning guide demonstrating FastMCP 2.0 best practices for Model Context Protocol development"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -24,8 +24,6 @@ classifiers = [
 ]
 dependencies = [
     "fastmcp>=2.0.0",
-    "matplotlib>=3.10.6",
-    "numpy>=2.3.3",
     "pydantic>=2.11.9",
 ]
 
@@ -64,6 +62,6 @@ dev = [
     "ruff>=0.13.1",
 ]
 plotting = [
-    "matplotlib>=3.8.0",
-    "numpy>=1.26.0",
+    "matplotlib>=3.10.6",
+    "numpy>=2.3.3",
 ]
