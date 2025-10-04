@@ -40,7 +40,7 @@ Click "Add a new publisher" and fill in:
 
 ```
 Publisher: GitHub
-Repository owner: huguesclouatre
+Repository owner: clouatre
 Repository name: math-mcp-learning-server
 Workflow name: python-publish.yml
 Environment name: pypi
@@ -109,7 +109,7 @@ PyPI Package Index
 **Cause:** GitHub environment `pypi` not configured.
 
 **Solution:**
-- Verify environment exists: https://github.com/huguesclouatre/math-mcp-learning-server/settings/environments
+- Verify environment exists: https://github.com/clouatre/math-mcp-learning-server/settings/environments
 - Check workflow references correct environment name
 
 ## References

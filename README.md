@@ -191,7 +191,7 @@ math-mcp-learning-server/
 
 ```bash
 # Clone the repository
-git clone https://github.com/huguesclouatre/math-mcp-learning-server.git
+git clone https://github.com/clouatre/math-mcp-learning-server.git
 cd math-mcp-learning-server
 
 # Install dependencies (includes plotting support)
