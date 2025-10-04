@@ -49,19 +49,13 @@ claude mcp add math-cloud https://math-mcp-learning.fastmcp.app/mcp
 
 ### Option 2: Run Locally
 
-Install from PyPI and configure your MCP client:
+Choose one of two installation methods:
 
-```bash
-# Install with uv (recommended)
-uv pip install math-mcp-learning-server
+**Method A: Automatic with uvx (recommended)**
 
-# Or use uvx for automatic installation when MCP client connects
-uvx math-mcp-learning-server
-```
+Configure your MCP client to use `uvx` - no manual installation needed:
 
-**Note:** After installation, configure your MCP client to connect to the local server.
-
-**Claude Desktop (Local):**
+**Claude Desktop:**
 ```json
 {
   "mcpServers": {
@@ -73,15 +67,40 @@ uvx math-mcp-learning-server
 }
 ```
 
-**Claude Code (Local):**
+**Claude Code:**
 ```bash
 claude mcp add math uvx math-mcp-learning-server
+```
+
+**Method B: Manual installation**
+
+1. Install the package:
+```bash
+uv pip install math-mcp-learning-server
+```
+
+2. Configure your MCP client:
+
+**Claude Desktop:**
+```json
+{
+  "mcpServers": {
+    "math": {
+      "command": "math-mcp-learning-server"
+    }
+  }
+}
+```
+
+**Claude Code:**
+```bash
+claude mcp add math math-mcp-learning-server
 ```
 
 ## Features
 
 ### Persistent Workspace
-- **Cross-Session State**: Save calculations and access them across different Claude sessions
+- **Cross-Session State**: Save calculations and access them across different MCP client sessions
 - **Persistent Storage**: Variables survive server restarts and session changes
 - **Cross-Platform**: Works on Windows (`%LOCALAPPDATA%`), macOS, and Linux (`~/.math-mcp`)
 - **Thread-Safe**: Concurrent access with atomic file operations
@@ -96,7 +115,7 @@ claude mcp add math uvx math-mcp-learning-server
 - **Function Plotting**: Generate mathematical function plots with base64-encoded PNG output
 - **Statistical Histograms**: Visualize data distributions with mean and median indicators
 - **Cloud Deployment**: Visualization tools (matplotlib) are included in the cloud deployment
-- **Local Development**: Install with `uv pip install math-mcp-learning-server[plotting]` for local development
+- **Local Usage**: Install with `uv pip install math-mcp-learning-server[plotting]` for local usage with plotting features
 
 ### Enterprise-Grade Quality
 - **Security Logging**: Monitor and log potentially dangerous expression attempts
@@ -125,7 +144,7 @@ This server implements **all official MCP transport modes** per the [MCP specifi
 
 ### Persistent Workspace Tools
 - `save_calculation`: Save calculations to persistent storage for cross-session access
-- `load_variable`: Access previously saved calculations from any Claude session
+- `load_variable`: Access previously saved calculations from any MCP client session
 
 ### Mathematical Tools
 - `calculate`: Safely evaluate mathematical expressions (supports basic ops and math functions)
@@ -233,7 +252,7 @@ This package is published to PyPI via GitHub Actions workflow. The workflow is t
 - Manual workflow dispatch
 
 **Publishing workflow:**
-1. Create and push a version tag: `git tag v0.6.3 && git push origin v0.6.3`
+1. Create and push a version tag: `git tag v0.6.7 && git push origin v0.6.7`
 2. GitHub Actions automatically builds and publishes to PyPI
 3. Release notes are generated from commit messages
 
