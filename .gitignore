@@ -1,8 +1,18 @@
-# Python
+# ============================================================
+# Python .gitignore (GitHub official template)
+# Source: https://github.com/github/gitignore/blob/main/Python.gitignore
+# Updated: 2025-01 (auto-maintained by GitHub community)
+# ============================================================
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
+*.py[codz]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -22,10 +32,6 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# UV Virtual Environment
-.venv/
-.venv
-
 # PyInstaller
 *.manifest
 *.spec
@@ -44,7 +50,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
+*.py.cover
 .hypothesis/
 .pytest_cache/
 cover/
@@ -53,17 +59,13 @@ cover/
 *.mo
 *.pot
 
-# Django stuff:
+# Django/Flask/Scrapy (if used)
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-
-# Flask stuff:
 instance/
 .webassets-cache
-
-# Scrapy stuff:
 .scrapy
 
 # Sphinx documentation
@@ -80,77 +82,94 @@ target/
 profile_default/
 ipython_config.py
 
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# poetry
-poetry.lock
-
-# pdm
-.pdm.toml
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
 # Environments
 .env
+.envrc
 .venv
-ENV/
 env/
 venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
 
-# Spyder project settings
+# Package managers
+.pdm-python
+.pdm-build/
+.pixi
+__pypackages__/
+
+# Celery/Redis/RabbitMQ/ActiveMQ
+celerybeat-schedule
+celerybeat.pid
+*.rdb
+*.aof
+*.pid
+mnesia/
+rabbitmq/
+rabbitmq-data/
+activemq-data/
+
+# SageMath
+*.sage.py
+
+# Spyder/Rope
 .spyderproject
 .spyproject
-
-# Rope project settings
 .ropeproject
 
-# mkdocs documentation
+# mkdocs
 /site
 
-# mypy
+# Type checkers
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
-# Pyre type checker
 .pyre/
-
-# pytype static type analyzer
 .pytype/
 
-# Cython debug symbols
+# Cython
 cython_debug/
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Ruff
+.ruff_cache/
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# PyPI
+.pypirc
 
-# Generated files
+# Marimo
+marimo/_static/
+marimo/_lsp/
+__marimo__/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# ============================================================
+# Project-specific patterns
+# ============================================================
+
+# Generated visualization files
 *.png
 
-# Claude Code
+# Test/demo files
+*_demo.py
+*_test_report.md
+diagnostic_*.py
+final_test.py
+
+# Coding agents (critical - prevents accidental commit of AI instructions)
 CLAUDE.md
+.amazonq/
+opencode.json
+.codex/
+.cursor/
+.windsurf/
+
+# IDEs & editors
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+._*
