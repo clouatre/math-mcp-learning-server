@@ -160,6 +160,7 @@ final_test.py
 
 # Coding agents (critical - prevents accidental commit of AI instructions)
 CLAUDE.md
+.claudecode/
 .amazonq/
 opencode.json
 .codex/
