@@ -2,9 +2,9 @@
 
 [![PyPI version](https://badge.fury.io/py/math-mcp-learning-server.svg)](https://pypi.org/project/math-mcp-learning-server/)
 
-**Try it now:** Connect your MCP client to [https://math-mcp-learning.fastmcp.app/mcp](https://math-mcp-learning.fastmcp.app/mcp) - no local installation needed!
+**Cloud hosted:** Connect any MCP client to [https://math-mcp-learning.fastmcp.app/mcp](https://math-mcp-learning.fastmcp.app/mcp) (MCP client required, no local server install needed)
 
-A persistent quantitative workspace built as a Model Context Protocol (MCP) server. This project demonstrates enterprise-grade patterns for MCP development, featuring cross-session state persistence - a unique capability that Claude Sonnet 4 cannot achieve natively.
+A persistent quantitative workspace built as a Model Context Protocol (MCP) server. This project demonstrates enterprise-grade patterns for MCP development, featuring cross-session state persistence - a unique capability that most LLMs cannot achieve natively.
 
 Perfect for learning MCP fundamentals, demonstrating professional patterns, and serving as a foundation for advanced mathematical workflows.
 
@@ -49,15 +49,17 @@ claude mcp add math-cloud https://math-mcp-learning.fastmcp.app/mcp
 
 ### Option 2: Run Locally
 
-Install and run from PyPI using uvx:
+Install from PyPI and configure your MCP client:
 
 ```bash
-# Quick test with uvx (recommended)
-uvx math-mcp-learning-server
+# Install with uv (recommended)
+uv pip install math-mcp-learning-server
 
-# Or install globally
-uv tool install math-mcp-learning-server
+# Or use uvx for automatic installation when MCP client connects
+uvx math-mcp-learning-server
 ```
+
+**Note:** After installation, configure your MCP client to connect to the local server.
 
 **Claude Desktop (Local):**
 ```json
@@ -106,9 +108,18 @@ claude mcp add math uvx math-mcp-learning-server
 
 This server implements the following MCP primitives:
 
-- **Tools**: 9 tools for mathematical operations, persistence, and visualization
+- **Tools**: 8 tools for mathematical operations, persistence, and visualization
 - **Resources**: 1 resource (`math://workspace`) for viewing the persistent workspace
 - **Prompts**: 0 (future enhancement opportunity)
+
+## Transport Support
+
+This server implements **all official MCP transport modes** per the [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports):
+
+- **stdio** - Standard input/output for local clients (Claude Desktop, Claude Code)
+- **HTTP/SSE** - Streamable HTTP with Server-Sent Events for cloud/web clients
+
+**Transport-agnostic workspace:** Your saved calculations persist across all transport modes and sessions.
 
 ## Available Tools
 
