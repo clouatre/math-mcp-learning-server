@@ -1,5 +1,0 @@
-# Core dependencies for FastMCP Cloud deployment (must match pyproject.toml)
-fastmcp>=2.0.0
-matplotlib>=3.10.6
-numpy>=2.3.3
-pydantic>=2.11.9
