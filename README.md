@@ -10,6 +10,20 @@ Perfect for learning MCP fundamentals, demonstrating professional patterns, and 
 
 Built with [FastMCP 2.0](https://github.com/jlowin/fastmcp) and the official [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk).
 
+## Requirements
+
+**This is an MCP server** - it requires an MCP client to use. Supported clients include:
+
+- **Claude Desktop** - Anthropic's desktop app with native MCP support
+- **Claude Code** - Command-line MCP client from Anthropic
+- **OpenCode** - Open-source MCP client
+- **Amazon Q** - AWS's AI assistant with MCP support
+- **Codex CLI** - GitHub Codex command-line interface
+- **Gemini CLI** - Google's Gemini command-line tool
+- Any other MCP-compatible client
+
+**Cannot run standalone** - The server must be connected through an MCP client.
+
 ## Quick Start
 
 ### Option 1: Try it Now (Cloud)
@@ -80,7 +94,7 @@ claude mcp add math uvx math-mcp-learning-server
 - **Function Plotting**: Generate mathematical function plots with base64-encoded PNG output
 - **Statistical Histograms**: Visualize data distributions with mean and median indicators
 - **Cloud Deployment**: Visualization tools (matplotlib) are included in the cloud deployment
-- **Local Development**: Install with `pip install math-mcp-learning-server[plotting]` for local development
+- **Local Development**: Install with `uv pip install math-mcp-learning-server[plotting]` for local development
 
 ### Enterprise-Grade Quality
 - **Security Logging**: Monitor and log potentially dangerous expression attempts
@@ -162,8 +176,9 @@ uv run mypy src/
 # Run linting
 uv run ruff check
 
-# Start the MCP server
-uv run math-mcp-learning-server
+# Test the MCP server with FastMCP dev mode
+uv run fastmcp dev src/math_mcp/server.py
+# Then connect via MCP client (Claude Desktop, Claude Code, etc.)
 ```
 
 ### Adding New Tools

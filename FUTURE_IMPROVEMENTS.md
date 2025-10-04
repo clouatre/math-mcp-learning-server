@@ -7,9 +7,19 @@ This document outlines the strategic evolution from a basic **math calculator MC
 This project follows **FastMCP 2.0 best practices**:
 - **Core dependencies**: Minimal in `[project.dependencies]` (fastmcp>=2.0.0, pydantic>=2.11.9)
 - **Optional features**: Defined in `[project.optional-dependencies]` for plotting, etc.
-- **Production**: Install via PyPI with optional groups: `pip install math-mcp-learning-server[plotting]`
+- **Production**: Install via PyPI with optional groups: `uv pip install math-mcp-learning-server[plotting]`
 - **Development**: `uv sync --all-extras` for all optional dependencies
 - **Cloud deployment**: Automatic via FastMCP Cloud (https://math-mcp-learning.fastmcp.app/mcp)
+
+## 🔌 **MCP Client Requirement**
+
+**This is an MCP server** - all features require an MCP-compatible client to use:
+- Claude Desktop, Claude Code
+- OpenCode, Amazon Q
+- Codex CLI, Gemini CLI
+- Any other MCP-compatible client
+
+**Cannot run standalone** - must be connected through an MCP client for testing and usage.
 
 ## 🎯 **Strategic Vision: Beyond Claude's Native Capabilities**
 
@@ -61,9 +71,9 @@ def load_variable(name: str) -> dict:
     # Access saved values across Claude sessions
 ```
 
-**User Experience:**
+**User Experience (via MCP Client):**
 ```bash
-# Session 1 with Claude
+# Session 1 - Using Claude Desktop/Code or other MCP client
 save_calculation("portfolio_return", "10000 * 1.07^5", 14025.52)
 
 # Session 2 (next day) - Claude remembers nothing, MCP remembers everything
@@ -114,11 +124,13 @@ def plot_financial_chart(data: dict, chart_type: str) -> dict:
 **Installation:**
 ```bash
 # Install from PyPI with plotting support:
-pip install math-mcp-learning-server[plotting]
+uv pip install math-mcp-learning-server[plotting]
 
 # Or install plotting dependencies separately:
-pip install math-mcp-learning-server
-pip install matplotlib numpy
+uv pip install math-mcp-learning-server
+uv pip install matplotlib numpy
+
+# Then connect via MCP client (Claude Desktop, Claude Code, etc.)
 ```
 
 **Educational Value:** Visual learning dramatically improves mathematical understanding
@@ -180,11 +192,13 @@ async def get_astronomical_data(query: str) -> dict:
 **Installation:**
 ```bash
 # Install data integration dependencies:
-pip install math-mcp-learning-server
-pip install httpx pandas
+uv pip install math-mcp-learning-server
+uv pip install httpx pandas
 
 # Or via extras (when data group is added):
-pip install math-mcp-learning-server[data]
+uv pip install math-mcp-learning-server[data]
+
+# Then connect via MCP client
 ```
 
 ### **Phase 4: High-Performance Computing (Advanced)**
@@ -210,11 +224,13 @@ def optimize_portfolio(returns: list, risks: list, constraints: dict) -> dict:
 **Installation:**
 ```bash
 # Install scientific computing dependencies:
-pip install math-mcp-learning-server[plotting]
-pip install numpy scipy pandas
+uv pip install math-mcp-learning-server[plotting]
+uv pip install numpy scipy pandas
 
 # Or via extras (when scientific group is added):
-pip install math-mcp-learning-server[scientific]
+uv pip install math-mcp-learning-server[scientific]
+
+# Then connect via MCP client
 ```
 
 ## 🏗️ **Technical Implementation Strategy**
@@ -248,28 +264,30 @@ def advanced_statistics(data: list[float]) -> dict:
     except ImportError:
         return {
             "error": "Advanced statistics requires scipy",
-            "install": "pip install math-mcp-learning-server[scientific]",
-            "note": "Or install scipy separately: pip install scipy"
+            "install": "uv pip install math-mcp-learning-server[scientific]",
+            "note": "Or install scipy separately: uv pip install scipy"
         }
 ```
 
 #### **✅ User Installation Commands**
 ```bash
 # Install from PyPI (basic):
-pip install math-mcp-learning-server
+uv pip install math-mcp-learning-server
 
 # Install with optional features:
-pip install math-mcp-learning-server[plotting]
-pip install math-mcp-learning-server[dev]
+uv pip install math-mcp-learning-server[plotting]
+uv pip install math-mcp-learning-server[dev]
 
 # Install all features:
-pip install math-mcp-learning-server[plotting,dev]
+uv pip install math-mcp-learning-server[plotting,dev]
 
 # Development (local):
 git clone https://github.com/huguesclouatre/math-mcp-learning-server
 cd math-mcp-learning-server
 uv sync --all-extras
 uv run fastmcp dev src/math_mcp/server.py
+
+# Then connect via MCP client (Claude Desktop, Claude Code, OpenCode, etc.)
 
 # Cloud deployment:
 # Visit https://math-mcp-learning.fastmcp.app/mcp
