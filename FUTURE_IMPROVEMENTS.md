@@ -1,6 +1,6 @@
 # Future Improvements: Quantitative Workspace Evolution
 
-This document outlines the strategic evolution from a basic **math calculator MCP** to a **persistent quantitative workspace** that provides capabilities Claude Sonnet 4.5 cannot achieve natively.
+This document outlines the strategic evolution from a basic **math calculator MCP** to a **persistent quantitative workspace** that provides capabilities that most LLMs cannot achieve natively.
 
 ## 📋 **FastMCP 2.0 Dependency Management**
 
@@ -23,9 +23,9 @@ This project follows **FastMCP 2.0 best practices**:
 
 ## 🎯 **Strategic Vision: Beyond Claude's Native Capabilities**
 
-### **Core Principle: Focus on What Claude Sonnet 4.5 CANNOT Do**
+### **Core Principle: Focus on What LLMs CANNOT Do**
 
-**Claude Sonnet 4.5 excels at:**
+**Most LLMs excel at:**
 - Complex calculations and multi-step problems
 - Mathematical explanations and reasoning
 - Problem-solving and showing work
@@ -348,7 +348,7 @@ uv run fastmcp dev src/math_mcp/server.py
 ## 🎯 **Decision Framework**
 
 ### **✅ Include Feature If:**
-- Provides capability Claude Sonnet 4.5 **cannot** achieve natively
+- Provides capability most LLMs **cannot** achieve natively
 - Works identically across stdio and HTTP transports
 - Maintains educational value while adding real utility
 - Uses FastMCP 2.0 patterns (optional dependencies in pyproject.toml)
@@ -380,4 +380,4 @@ uv run fastmcp dev src/math_mcp/server.py
 
 ---
 
-*This strategic roadmap transforms our educational MCP into a persistent quantitative workspace that provides genuine value beyond Claude Sonnet 4's native mathematical capabilities, while maintaining simplicity and adherence to official MCP best practices.*
+*This strategic roadmap transforms our educational MCP into a persistent quantitative workspace that provides genuine value beyond what most LLMs can achieve natively, while maintaining simplicity and adherence to official MCP best practices.*
