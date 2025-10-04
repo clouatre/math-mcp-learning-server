@@ -2,9 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/math-mcp-learning-server.svg)](https://pypi.org/project/math-mcp-learning-server/)
 
-**Cloud hosted:** Connect any MCP client to [https://math-learning.fastmcp.app/mcp](https://math-learning.fastmcp.app/mcp) (MCP client required, no local server install needed)
-
-> **Note:** Cloud endpoint migrated from `math-mcp-learning` to `math-learning` (January 2025) following GitHub username change. Update your MCP client configuration if using the old endpoint.
+**Cloud hosted:** Connect any MCP client to [https://math-mcp-learning.fastmcp.app/mcp](https://math-mcp-learning.fastmcp.app/mcp) (MCP client required, no local server install needed)
 
 A persistent quantitative workspace built as a Model Context Protocol (MCP) server. This project demonstrates enterprise-grade patterns for MCP development, featuring cross-session state persistence - a unique capability that most LLMs cannot achieve natively.
 
@@ -38,7 +36,7 @@ Connect your MCP client to the hosted server - no local installation required!
   "mcpServers": {
     "math-cloud": {
       "transport": "http",
-      "url": "https://math-learning.fastmcp.app/mcp"
+      "url": "https://math-mcp-learning.fastmcp.app/mcp"
     }
   }
 }
@@ -46,7 +44,7 @@ Connect your MCP client to the hosted server - no local installation required!
 
 **Claude Code:**
 ```bash
-claude mcp add math-cloud https://math-learning.fastmcp.app/mcp
+claude mcp add math-cloud https://math-mcp-learning.fastmcp.app/mcp
 ```
 
 ### Option 2: Run Locally
