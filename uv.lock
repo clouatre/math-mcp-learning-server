@@ -682,12 +682,10 @@ wheels = [
 
 [[package]]
 name = "math-mcp-learning-server"
-version = "0.7.5"
+version = "0.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
-    { name = "matplotlib" },
-    { name = "numpy" },
     { name = "pydantic" },
 ]
 
@@ -706,11 +704,9 @@ plotting = [
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = ">=2.0.0" },
-    { name = "matplotlib", specifier = ">=3.10.6" },
-    { name = "matplotlib", marker = "extra == 'plotting'", specifier = ">=3.8.0" },
+    { name = "matplotlib", marker = "extra == 'plotting'", specifier = ">=3.10.6" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.18.2" },
-    { name = "numpy", specifier = ">=2.3.3" },
-    { name = "numpy", marker = "extra == 'plotting'", specifier = ">=1.26.0" },
+    { name = "numpy", marker = "extra == 'plotting'", specifier = ">=2.3.3" },
     { name = "pydantic", specifier = ">=2.11.9" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.25.2" },
