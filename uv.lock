@@ -822,7 +822,7 @@ wheels = [
 
 [[package]]
 name = "math-mcp-learning-server"
-version = "0.5.0"
+version = "0.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },

@@ -148,3 +148,9 @@ cython_debug/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Generated files
+*.png
+
+# Claude Code
+CLAUDE.md
