@@ -4,8 +4,6 @@ Test cases for visualization tools (plot_function and create_histogram)
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
-import base64
 
 
 # === HELPER FIXTURES ===
