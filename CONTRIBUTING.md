@@ -272,10 +272,7 @@ Once the release is published, GitHub Actions automatically:
 #### **4. Verify Release**
 ```bash
 # Test installation
-pip install math-mcp-learning-server==1.2.0
-
-# Or with uv
-uv add math-mcp-learning-server==1.2.0
+uv pip install math-mcp-learning-server==0.6.7
 ```
 
 ### **Manual Publishing (Emergency Only)**
