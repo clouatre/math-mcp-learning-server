@@ -471,7 +471,7 @@ async def save_calculation(
     }
 
     # Save to persistent workspace
-    from .persistence.workspace import _workspace_manager
+    from math_mcp.persistence.workspace import _workspace_manager
     result_data = _workspace_manager.save_variable(name, expression, result, metadata)
 
     # Also add to session history
@@ -517,7 +517,7 @@ async def load_variable(
     """
     # FastMCP 2.0 Context logging
     await ctx.info(f"Loading variable '{name}'")
-    from .persistence.workspace import _workspace_manager
+    from math_mcp.persistence.workspace import _workspace_manager
     result_data = _workspace_manager.load_variable(name)
 
     if not result_data["success"]:
@@ -917,7 +917,7 @@ async def list_available_functions(ctx: Context) -> str:
 async def get_calculation_history(ctx: Context) -> str:
     """Get the history of calculations performed across sessions."""
     await ctx.info("Accessing calculation history")
-    from .persistence.workspace import _workspace_manager
+    from math_mcp.persistence.workspace import _workspace_manager
 
     # Get workspace history
     workspace_data = _workspace_manager._load_workspace()
@@ -955,7 +955,7 @@ async def get_workspace(ctx: Context) -> str:
     survives server restarts and is accessible across different transport modes.
     """
     await ctx.info("Accessing persistent workspace")
-    from .persistence.workspace import _workspace_manager
+    from math_mcp.persistence.workspace import _workspace_manager
     return _workspace_manager.get_workspace_summary()
 
 

@@ -10,8 +10,8 @@ import threading
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from .models import WorkspaceData, WorkspaceVariable
-from .storage import get_workspace_file
+from math_mcp.persistence.models import WorkspaceData, WorkspaceVariable
+from math_mcp.persistence.storage import get_workspace_file
 
 
 class WorkspaceManager:
