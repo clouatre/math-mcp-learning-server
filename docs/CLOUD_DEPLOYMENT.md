@@ -1,5 +1,7 @@
 # Cloud Deployment Guide
 
+> **Endpoint Migration (January 2025):** Cloud endpoint changed from `math-mcp-learning.fastmcp.app` to `math-learning.fastmcp.app` following GitHub username migration. Update your client configurations.
+
 ## FastMCP Cloud Deployment
 
 Deploy this server to [FastMCP Cloud](https://fastmcp.cloud) for hosted, production-ready access without local setup.
@@ -37,7 +39,7 @@ This server includes a `fastmcp.json` configuration file for seamless cloud depl
 1. **Navigate to**: [FastMCP Cloud Dashboard](https://fastmcp.cloud)
 2. **Connect GitHub Repository**: `clouatre/math-mcp-learning-server`
 3. **Deploy**: FastMCP Cloud auto-detects `fastmcp.json` configuration
-4. **Access via MCP Client**: Connect your MCP client to `https://math-mcp-learning.fastmcp.app/mcp`
+4. **Access via MCP Client**: Connect your MCP client to `https://math-learning.fastmcp.app/mcp`
 
 ### Cloud Storage Considerations
 
