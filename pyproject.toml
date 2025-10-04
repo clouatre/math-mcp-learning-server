@@ -1,7 +1,7 @@
 [project]
 name = "math-mcp-learning-server"
-version = "0.6.8"
-description = "Production-ready educational MCP server with persistent workspace and FastMCP Cloud support - Complete learning guide demonstrating FastMCP 2.0 best practices for Model Context Protocol development"
+version = "0.7.0"
+description = "Production-ready educational MCP server with enhanced visualizations and persistent workspace - Complete learning guide demonstrating FastMCP 2.0 best practices for Model Context Protocol development"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = "MIT"
@@ -52,6 +52,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["F401"]  # Allow unused imports in tests for dependency checking
 
 [project.optional-dependencies]
 dev = [
