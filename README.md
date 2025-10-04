@@ -381,6 +381,10 @@ Includes:
 - Testing procedures and quality assurance
 - Architecture guidelines and best practices
 
+## Code of Conduct
+
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to hugues+mcp-coc@linux.com.
+
 ## Publishing to PyPI
 
 This package is published to PyPI using `uv`. To publish updates:

@@ -343,10 +343,7 @@ For detailed troubleshooting, see [PyPI Trusted Publishing docs](.github/PYPI_TR
 
 ## 📄 **Code of Conduct**
 
-- Be respectful and inclusive
-- Focus on constructive feedback
-- Help maintain a welcoming environment
-- Follow the project's educational mission
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to hugues+mcp-coc@linux.com.
 
 ## 🎯 **What We're Looking For**
 
