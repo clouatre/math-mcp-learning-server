@@ -15,7 +15,7 @@ import pytest
 
 from math_mcp.persistence.models import WorkspaceData, WorkspaceVariable
 from math_mcp.persistence.storage import get_workspace_dir, get_workspace_file, ensure_workspace_directory
-from math_mcp.persistence.workspace import WorkspaceManager, _workspace_manager
+from math_mcp.persistence.workspace import _workspace_manager
 from math_mcp.server import save_calculation, load_variable, get_workspace
 
 
