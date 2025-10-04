@@ -1,20 +1,21 @@
 [project]
 name = "math-mcp-learning-server"
-version = "0.6.3"
-description = "Educational MCP server demonstrating FastMCP 2.0 best practices - Complete learning guide with contributing guidelines and roadmap for Model Context Protocol development"
+version = "0.6.4"
+description = "Production-ready educational MCP server with persistent workspace and FastMCP Cloud support - Complete learning guide demonstrating FastMCP 2.0 best practices for Model Context Protocol development"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = "MIT"
 authors = [
     {name = "Hugues Clouâtre", email = "hugues+mcp@linux.com"}
 ]
-keywords = ["mcp", "math", "calculator", "learning", "fastmcp", "tutorial", "education"]
+keywords = ["mcp", "math", "calculator", "learning", "fastmcp", "tutorial", "education", "cloud", "deployment", "workspace", "persistence"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Education",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Scientific/Engineering :: Mathematics",

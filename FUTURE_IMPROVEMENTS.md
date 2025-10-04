@@ -1,19 +1,21 @@
 # Future Improvements: Quantitative Workspace Evolution
 
-This document outlines the strategic evolution from a basic **math calculator MCP** to a **persistent quantitative workspace** that provides capabilities Claude Sonnet 4 cannot achieve natively.
+This document outlines the strategic evolution from a basic **math calculator MCP** to a **persistent quantitative workspace** that provides capabilities Claude Sonnet 4.5 cannot achieve natively.
 
-## 📋 **MCP Dependency Management Note**
+## 📋 **FastMCP 2.0 Dependency Management**
 
-This document follows **official MCP Python SDK patterns**:
-- **Development/Testing**: `uv run mcp dev server.py --with package`
-- **Production**: `pip install package` first, then `uv run mcp install server.py`
-- **Core dependencies**: Kept minimal in `pyproject.toml` (mcp, pydantic only)
+This project follows **FastMCP 2.0 best practices**:
+- **Core dependencies**: Minimal in `[project.dependencies]` (fastmcp>=2.0.0, pydantic>=2.11.9)
+- **Optional features**: Defined in `[project.optional-dependencies]` for plotting, etc.
+- **Production**: Install via PyPI with optional groups: `pip install math-mcp-learning-server[plotting]`
+- **Development**: `uv sync --all-extras` for all optional dependencies
+- **Cloud deployment**: Automatic via FastMCP Cloud (https://math-mcp-learning.fastmcp.app/mcp)
 
 ## 🎯 **Strategic Vision: Beyond Claude's Native Capabilities**
 
-### **Core Principle: Focus on What Claude Sonnet 4 CANNOT Do**
+### **Core Principle: Focus on What Claude Sonnet 4.5 CANNOT Do**
 
-**Claude Sonnet 4 excels at:**
+**Claude Sonnet 4.5 excels at:**
 - Complex calculations and multi-step problems
 - Mathematical explanations and reasoning
 - Problem-solving and showing work
@@ -35,7 +37,7 @@ This document follows **official MCP Python SDK patterns**:
 ### **Phase 1: Persistent Workspace ✅ COMPLETED**
 *Transform from stateless calculator to stateful workspace*
 
-**Status:** ✅ **FULLY IMPLEMENTED** in v0.2.0 (September 2025)
+**Status:** ✅ **FULLY IMPLEMENTED** in v0.2.0 (September 28, 2025)
 - **22 comprehensive tests** with thread-safety validation
 - **Cross-platform storage** (Windows: `%LOCALAPPDATA%`, Unix: `~/.math-mcp`)
 - **Transport-agnostic operation** (stdio, SSE, streamable-http)
@@ -79,6 +81,15 @@ get_workspace()  # Shows all saved calculations
 - ✅ **Session recovery** after process restarts
 - ✅ **Unified workspace file** (`~/.math-mcp/workspace.json`) across all transports
 
+#### **1.3 FastMCP Cloud Deployment ✅ COMPLETE**
+- ✅ **Cloud hosting at https://math-mcp-learning.fastmcp.app/mcp**
+- ✅ **Automatic environment-based authentication** (OAuth, JWT via env vars)
+- ✅ **Production transport support** (SSE, HTTP)
+- ✅ **Zero-config deployment** from GitHub repository
+- ✅ **Persistent workspace across cloud sessions**
+
+**Installation:** No additional dependencies required
+
 ### **Phase 2: Visual Generation (High Developer Value)**
 *Add visual output Claude cannot create*
 
@@ -102,12 +113,12 @@ def plot_financial_chart(data: dict, chart_type: str) -> dict:
 
 **Installation:**
 ```bash
-# Development mode (testing/learning):
-uv run mcp dev server.py --with matplotlib
+# Install from PyPI with plotting support:
+pip install math-mcp-learning-server[plotting]
 
-# Production mode (actual deployment):
-pip install matplotlib
-uv run mcp install server.py
+# Or install plotting dependencies separately:
+pip install math-mcp-learning-server
+pip install matplotlib numpy
 ```
 
 **Educational Value:** Visual learning dramatically improves mathematical understanding
@@ -168,12 +179,12 @@ async def get_astronomical_data(query: str) -> dict:
 
 **Installation:**
 ```bash
-# Development mode (testing/learning):
-uv run mcp dev server.py --with httpx --with pandas
-
-# Production mode (actual deployment):
+# Install data integration dependencies:
+pip install math-mcp-learning-server
 pip install httpx pandas
-uv run mcp install server.py
+
+# Or via extras (when data group is added):
+pip install math-mcp-learning-server[data]
 ```
 
 ### **Phase 4: High-Performance Computing (Advanced)**
@@ -198,26 +209,31 @@ def optimize_portfolio(returns: list, risks: list, constraints: dict) -> dict:
 
 **Installation:**
 ```bash
-# Development mode (testing/learning):
-uv run mcp dev server.py --with numpy --with scipy --with pandas --with matplotlib
+# Install scientific computing dependencies:
+pip install math-mcp-learning-server[plotting]
+pip install numpy scipy pandas
 
-# Production mode (actual deployment):
-pip install numpy scipy pandas matplotlib
-uv run mcp install server.py
+# Or via extras (when scientific group is added):
+pip install math-mcp-learning-server[scientific]
 ```
 
 ## 🏗️ **Technical Implementation Strategy**
 
 ### **Official MCP Best Practices Compliance**
 
-#### **✅ Runtime Dependencies (Official Pattern)**
+#### **✅ Runtime Dependencies (FastMCP 2.0 Pattern)**
 ```toml
 # pyproject.toml - Keep minimal core dependencies
+[project]
 dependencies = [
-    "mcp>=1.14.1",
+    "fastmcp>=2.0.0",
     "pydantic>=2.11.9",
 ]
-# NO dependency groups - use runtime --with flags
+
+# Optional feature groups for progressive enhancement
+[project.optional-dependencies]
+plotting = ["matplotlib>=3.10.6", "numpy>=2.3.3"]
+dev = ["pytest>=8.4.2", "pytest-asyncio>=0.25.2", "mypy>=1.18.2", "ruff>=0.13.1"]
 ```
 
 #### **✅ Graceful Degradation Pattern**
@@ -232,23 +248,32 @@ def advanced_statistics(data: list[float]) -> dict:
     except ImportError:
         return {
             "error": "Advanced statistics requires scipy",
-            "install": "pip install scipy",
-            "dev_mode": "Or use: uv run mcp dev server.py --with scipy"
+            "install": "pip install math-mcp-learning-server[scientific]",
+            "note": "Or install scipy separately: pip install scipy"
         }
 ```
 
 #### **✅ User Installation Commands**
 ```bash
-# Basic educational use (production):
-uv run mcp install math-mcp-learning-server
+# Install from PyPI (basic):
+pip install math-mcp-learning-server
 
-# Development with optional dependencies:
-uv run mcp dev server.py --with matplotlib
-uv run mcp dev server.py --with matplotlib --with httpx --with numpy --with pandas
+# Install with optional features:
+pip install math-mcp-learning-server[plotting]
+pip install math-mcp-learning-server[dev]
 
-# Production with optional dependencies:
-pip install matplotlib httpx numpy pandas
-uv run mcp install server.py
+# Install all features:
+pip install math-mcp-learning-server[plotting,dev]
+
+# Development (local):
+git clone https://github.com/huguesclouatre/math-mcp-learning-server
+cd math-mcp-learning-server
+uv sync --all-extras
+uv run fastmcp dev src/math_mcp/server.py
+
+# Cloud deployment:
+# Visit https://math-mcp-learning.fastmcp.app/mcp
+# Or deploy your own via FastMCP Cloud
 ```
 
 ### **Architecture Principles**
@@ -297,18 +322,18 @@ uv run mcp install server.py
 - ❌ Educational content generation (Claude is superior)
 
 **Avoid MCP anti-patterns:**
-- ❌ Dependency groups `[scientific]` (not official MCP pattern)
-- ❌ Multiple separate servers (overengineering)
+- ❌ Multiple separate servers (overengineering - keep focused)
+- ❌ Heavy dependencies in core (use optional-dependencies)
 - ❌ Complex plugin architectures (not MCP-style)
 - ❌ Transport-specific implementations (violates MCP principles)
 
 ## 🎯 **Decision Framework**
 
 ### **✅ Include Feature If:**
-- Provides capability Claude Sonnet 4 **cannot** achieve natively
+- Provides capability Claude Sonnet 4.5 **cannot** achieve natively
 - Works identically across stdio and HTTP transports
 - Maintains educational value while adding real utility
-- Uses official FastMCP patterns (`--with` runtime dependencies)
+- Uses FastMCP 2.0 patterns (optional dependencies in pyproject.toml)
 - Enhances coding environment workflows
 
 ### **❌ Skip Feature If:**
