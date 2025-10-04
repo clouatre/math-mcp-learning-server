@@ -16,6 +16,9 @@ from typing import Any
 from pydantic import BaseModel, Field
 from fastmcp import FastMCP, Context
 
+# Import visualization functions
+from . import visualization
+
 
 # === PYDANTIC MODELS FOR STRUCTURED OUTPUT ===
 
@@ -835,6 +838,445 @@ async def create_histogram(
                     "error": "unexpected_error",
                     "difficulty": "intermediate",
                     "topic": "visualization"
+                }
+            }]
+        }
+
+
+@mcp.tool(
+    annotations={
+        "title": "Line Chart",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def plot_line_chart(
+    x_data: list[float],
+    y_data: list[float],
+    title: str = "Line Chart",
+    x_label: str = "X",
+    y_label: str = "Y",
+    color: str | None = None,
+    show_grid: bool = True,
+    ctx: Context | None = None
+) -> dict[str, Any]:
+    """Create a line chart from data points (requires matplotlib).
+
+    Args:
+        x_data: X-axis data points
+        y_data: Y-axis data points
+        title: Chart title
+        x_label: X-axis label
+        y_label: Y-axis label
+        color: Line color (name or hex code, e.g., 'blue', '#2E86AB')
+        show_grid: Whether to show grid lines
+        ctx: FastMCP context for logging
+
+    Returns:
+        Dict with base64-encoded PNG image or error message
+
+    Examples:
+        plot_line_chart([1, 2, 3, 4], [1, 4, 9, 16], title="Squares")
+        plot_line_chart([0, 1, 2], [0, 1, 4], color='red', x_label='Time', y_label='Distance')
+    """
+    try:
+        import matplotlib  # noqa: F401 - Check if available
+    except ImportError:
+        return {
+            "content": [{
+                "type": "text",
+                "text": "**Matplotlib not available**\n\nInstall with: `pip install math-mcp-learning-server[plotting]`\n\nOr for development: `uv sync --extra plotting`",
+                "annotations": {
+                    "error": "missing_dependency",
+                    "install_command": "pip install math-mcp-learning-server[plotting]",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+    if ctx:
+        await ctx.info(f"Creating line chart with {len(x_data)} data points")
+
+    try:
+        image_base64 = visualization.create_line_chart(
+            x_data=x_data,
+            y_data=y_data,
+            title=title,
+            x_label=x_label,
+            y_label=y_label,
+            color=color,
+            show_grid=show_grid
+        ).decode('utf-8')
+
+        return {
+            "content": [{
+                "type": "image",
+                "data": image_base64,
+                "mimeType": "image/png",
+                "annotations": {
+                    "difficulty": "intermediate",
+                    "topic": "visualization",
+                    "chart_type": "line",
+                    "data_points": len(x_data),
+                    "educational_note": "Line charts show trends and relationships between continuous data points"
+                }
+            }]
+        }
+
+    except ValueError as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Line Chart Error:** {str(e)}\n\nPlease check that x_data and y_data have the same length and contain at least 2 points.",
+                "annotations": {
+                    "error": "line_chart_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+    except Exception as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Unexpected Error:** {str(e)}",
+                "annotations": {
+                    "error": "unexpected_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+
+@mcp.tool(
+    annotations={
+        "title": "Scatter Plot",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def plot_scatter_chart(
+    x_data: list[float],
+    y_data: list[float],
+    title: str = "Scatter Plot",
+    x_label: str = "X",
+    y_label: str = "Y",
+    color: str | None = None,
+    point_size: int = 50,
+    ctx: Context | None = None
+) -> dict[str, Any]:
+    """Create a scatter plot from data points (requires matplotlib).
+
+    Args:
+        x_data: X-axis data points
+        y_data: Y-axis data points
+        title: Chart title
+        x_label: X-axis label
+        y_label: Y-axis label
+        color: Point color (name or hex code, e.g., 'blue', '#2E86AB')
+        point_size: Size of scatter points (default: 50)
+        ctx: FastMCP context for logging
+
+    Returns:
+        Dict with base64-encoded PNG image or error message
+
+    Examples:
+        plot_scatter_chart([1, 2, 3, 4], [1, 4, 9, 16], title="Correlation Study")
+        plot_scatter_chart([1, 2, 3], [2, 4, 5], color='purple', point_size=100)
+    """
+    try:
+        import matplotlib  # noqa: F401 - Check if available
+    except ImportError:
+        return {
+            "content": [{
+                "type": "text",
+                "text": "**Matplotlib not available**\n\nInstall with: `pip install math-mcp-learning-server[plotting]`\n\nOr for development: `uv sync --extra plotting`",
+                "annotations": {
+                    "error": "missing_dependency",
+                    "install_command": "pip install math-mcp-learning-server[plotting]",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+    if ctx:
+        await ctx.info(f"Creating scatter plot with {len(x_data)} data points")
+
+    try:
+        image_base64 = visualization.create_scatter_plot(
+            x_data=x_data,
+            y_data=y_data,
+            title=title,
+            x_label=x_label,
+            y_label=y_label,
+            color=color,
+            point_size=point_size
+        ).decode('utf-8')
+
+        return {
+            "content": [{
+                "type": "image",
+                "data": image_base64,
+                "mimeType": "image/png",
+                "annotations": {
+                    "difficulty": "intermediate",
+                    "topic": "visualization",
+                    "chart_type": "scatter",
+                    "data_points": len(x_data),
+                    "educational_note": "Scatter plots reveal correlations and patterns in paired data"
+                }
+            }]
+        }
+
+    except ValueError as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Scatter Plot Error:** {str(e)}\n\nPlease check that x_data and y_data have the same length.",
+                "annotations": {
+                    "error": "scatter_plot_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+    except Exception as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Unexpected Error:** {str(e)}",
+                "annotations": {
+                    "error": "unexpected_error",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+
+@mcp.tool(
+    annotations={
+        "title": "Box Plot",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def plot_box_plot(
+    data_groups: list[list[float]],
+    group_labels: list[str] | None = None,
+    title: str = "Box Plot",
+    y_label: str = "Values",
+    color: str | None = None,
+    ctx: Context | None = None
+) -> dict[str, Any]:
+    """Create a box plot for comparing distributions (requires matplotlib).
+
+    Args:
+        data_groups: List of data groups to compare
+        group_labels: Labels for each group (optional)
+        title: Chart title
+        y_label: Y-axis label
+        color: Box plot color (name or hex code, e.g., 'blue', '#2E86AB')
+        ctx: FastMCP context for logging
+
+    Returns:
+        Dict with base64-encoded PNG image or error message
+
+    Examples:
+        plot_box_plot([[1, 2, 3, 4], [2, 3, 4, 5]], group_labels=['Group A', 'Group B'])
+        plot_box_plot([[10, 20, 30], [15, 25, 35], [20, 30, 40]], color='green')
+    """
+    try:
+        import matplotlib  # noqa: F401 - Check if available
+    except ImportError:
+        return {
+            "content": [{
+                "type": "text",
+                "text": "**Matplotlib not available**\n\nInstall with: `pip install math-mcp-learning-server[plotting]`\n\nOr for development: `uv sync --extra plotting`",
+                "annotations": {
+                    "error": "missing_dependency",
+                    "install_command": "pip install math-mcp-learning-server[plotting]",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+    if ctx:
+        await ctx.info(f"Creating box plot with {len(data_groups)} groups")
+
+    try:
+        image_base64 = visualization.create_box_plot(
+            data_groups=data_groups,
+            group_labels=group_labels,
+            title=title,
+            y_label=y_label,
+            color=color
+        ).decode('utf-8')
+
+        return {
+            "content": [{
+                "type": "image",
+                "data": image_base64,
+                "mimeType": "image/png",
+                "annotations": {
+                    "difficulty": "advanced",
+                    "topic": "statistics",
+                    "chart_type": "box_plot",
+                    "groups": len(data_groups),
+                    "educational_note": "Box plots display distribution quartiles, median, and outliers for comparison"
+                }
+            }]
+        }
+
+    except ValueError as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Box Plot Error:** {str(e)}\n\nPlease check that data_groups is not empty and all groups contain at least one value.",
+                "annotations": {
+                    "error": "box_plot_error",
+                    "difficulty": "advanced",
+                    "topic": "statistics"
+                }
+            }]
+        }
+    except Exception as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Unexpected Error:** {str(e)}",
+                "annotations": {
+                    "error": "unexpected_error",
+                    "difficulty": "advanced",
+                    "topic": "statistics"
+                }
+            }]
+        }
+
+
+@mcp.tool(
+    annotations={
+        "title": "Financial Line Chart",
+        "readOnlyHint": False,
+        "openWorldHint": False
+    }
+)
+async def plot_financial_line(
+    days: int = 30,
+    trend: str = "bullish",
+    start_price: float = 100.0,
+    color: str | None = None,
+    ctx: Context | None = None
+) -> dict[str, Any]:
+    """Generate and plot synthetic financial price data (requires matplotlib).
+
+    Creates realistic price movement patterns for educational purposes.
+    Does not use real market data.
+
+    Args:
+        days: Number of days to generate (default: 30)
+        trend: Market trend ('bullish', 'bearish', or 'volatile')
+        start_price: Starting price value (default: 100.0)
+        color: Line color (name or hex code, e.g., 'blue', '#2E86AB')
+        ctx: FastMCP context for logging
+
+    Returns:
+        Dict with base64-encoded PNG image or error message
+
+    Examples:
+        plot_financial_line(days=60, trend='bullish')
+        plot_financial_line(days=90, trend='volatile', start_price=150.0, color='orange')
+    """
+    try:
+        import matplotlib  # noqa: F401 - Check if available
+    except ImportError:
+        return {
+            "content": [{
+                "type": "text",
+                "text": "**Matplotlib not available**\n\nInstall with: `pip install math-mcp-learning-server[plotting]`\n\nOr for development: `uv sync --extra plotting`",
+                "annotations": {
+                    "error": "missing_dependency",
+                    "install_command": "pip install math-mcp-learning-server[plotting]",
+                    "difficulty": "intermediate",
+                    "topic": "visualization"
+                }
+            }]
+        }
+
+    if ctx:
+        await ctx.info(f"Generating synthetic {trend} price data for {days} days")
+
+    try:
+        # Validate trend parameter
+        if trend not in ["bullish", "bearish", "volatile"]:
+            raise ValueError("trend must be 'bullish', 'bearish', or 'volatile'")
+
+        # Generate synthetic data
+        dates, prices = visualization.generate_synthetic_price_data(
+            days=days,
+            trend=trend,  # type: ignore
+            start_price=start_price
+        )
+
+        # Create financial chart
+        image_base64 = visualization.create_financial_line_chart(
+            dates=dates,
+            prices=prices,
+            title=f"Synthetic {trend.capitalize()} Price Movement ({days} days)",
+            y_label="Price ($)",
+            color=color
+        ).decode('utf-8')
+
+        # Calculate statistics
+        import statistics as stats
+        price_change = ((prices[-1] - prices[0]) / prices[0]) * 100
+        volatility = stats.stdev(prices) if len(prices) > 1 else 0
+
+        return {
+            "content": [{
+                "type": "image",
+                "data": image_base64,
+                "mimeType": "image/png",
+                "annotations": {
+                    "difficulty": "advanced",
+                    "topic": "financial_analysis",
+                    "chart_type": "financial_line",
+                    "days": days,
+                    "trend": trend,
+                    "start_price": round(start_price, 2),
+                    "end_price": round(prices[-1], 2),
+                    "price_change_percent": round(price_change, 2),
+                    "volatility": round(volatility, 2),
+                    "educational_note": "Synthetic data generated for educational purposes only - not real market data"
+                }
+            }]
+        }
+
+    except ValueError as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Financial Chart Error:** {str(e)}\n\nPlease check your parameters (days >= 2, valid trend, positive start_price).",
+                "annotations": {
+                    "error": "financial_chart_error",
+                    "difficulty": "advanced",
+                    "topic": "financial_analysis"
+                }
+            }]
+        }
+    except Exception as e:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"**Unexpected Error:** {str(e)}",
+                "annotations": {
+                    "error": "unexpected_error",
+                    "difficulty": "advanced",
+                    "topic": "financial_analysis"
                 }
             }]
         }

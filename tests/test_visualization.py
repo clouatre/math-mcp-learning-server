@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Test cases for visualization tools (plot_function and create_histogram)
+
+Note: The import matplotlib/numpy pattern in tests is intentional for checking
+package availability before running visualization tests. The noqa: F401 comments
+suppress unused import warnings as these imports are used for dependency checking.
 """
 
 import pytest
@@ -59,8 +63,8 @@ async def test_plot_function_graceful_degradation_structure(mock_context):
 async def test_plot_function_basic_quadratic(mock_context):
     """Test plotting a basic quadratic function."""
     try:
-        import matplotlib
-        import numpy as np
+        import matplotlib  # noqa: F401
+        import numpy as np  # noqa: F401
     except ImportError:
         pytest.skip("matplotlib not available")
 
@@ -447,6 +451,242 @@ async def test_visualization_educational_annotations():
     assert "topic" in hist_annotations
     assert hist_annotations["topic"] == "statistics"
     assert "educational_note" in hist_annotations
+
+
+# === VISUALIZATION MODULE UNIT TESTS ===
+
+class TestVisualizationModule:
+    """Test visualization module functions directly."""
+
+    def test_validate_color_scheme_named(self):
+        """Test color validation with named colors."""
+        from math_mcp import visualization
+        assert visualization._validate_color_scheme('blue') == '#2E86AB'
+        assert visualization._validate_color_scheme('red') == '#C73E1D'
+        assert visualization._validate_color_scheme('green') == '#06A77D'
+
+    def test_validate_color_scheme_hex(self):
+        """Test color validation with hex codes."""
+        from math_mcp import visualization
+        assert visualization._validate_color_scheme('#FF0000') == '#FF0000'
+
+    def test_validate_color_scheme_default(self):
+        """Test color validation returns default for None or invalid."""
+        from math_mcp import visualization
+        assert visualization._validate_color_scheme(None) == '#2E86AB'
+
+    def test_create_line_chart_success(self):
+        """Test line chart generation."""
+        try:
+            import matplotlib
+        except ImportError:
+            pytest.skip("matplotlib not available")
+
+        from math_mcp import visualization
+        result = visualization.create_line_chart(
+            x_data=[1, 2, 3, 4],
+            y_data=[1, 4, 9, 16]
+        )
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+
+    def test_create_scatter_plot_success(self):
+        """Test scatter plot generation."""
+        try:
+            import matplotlib
+        except ImportError:
+            pytest.skip("matplotlib not available")
+
+        from math_mcp import visualization
+        result = visualization.create_scatter_plot(
+            x_data=[1, 2, 3],
+            y_data=[2, 4, 6]
+        )
+        assert isinstance(result, bytes)
+
+    def test_create_box_plot_success(self):
+        """Test box plot generation."""
+        try:
+            import matplotlib
+        except ImportError:
+            pytest.skip("matplotlib not available")
+
+        from math_mcp import visualization
+        result = visualization.create_box_plot(
+            data_groups=[[1, 2, 3], [4, 5, 6]]
+        )
+        assert isinstance(result, bytes)
+
+    def test_generate_synthetic_price_data_bullish(self):
+        """Test synthetic data generation with bullish trend."""
+        from math_mcp import visualization
+        dates, prices = visualization.generate_synthetic_price_data(
+            days=30,
+            trend='bullish',
+            start_price=100.0
+        )
+        assert len(dates) == 30
+        assert len(prices) == 30
+        assert prices[0] == 100.0
+
+    def test_create_financial_line_chart_success(self):
+        """Test financial chart generation."""
+        try:
+            import matplotlib
+        except ImportError:
+            pytest.skip("matplotlib not available")
+
+        from math_mcp import visualization
+        dates, prices = visualization.generate_synthetic_price_data(days=20)
+        result = visualization.create_financial_line_chart(
+            dates=dates,
+            prices=prices
+        )
+        assert isinstance(result, bytes)
+
+
+# === NEW MCP TOOLS TESTS ===
+
+@pytest.mark.asyncio
+async def test_plot_line_chart_basic(mock_context):
+    """Test plot_line_chart tool."""
+    try:
+        import matplotlib
+    except ImportError:
+        pytest.skip("matplotlib not available")
+
+    from math_mcp.server import plot_line_chart
+
+    result = await plot_line_chart.fn(
+        [1.0, 2.0, 3.0, 4.0],
+        [1.0, 4.0, 9.0, 16.0],
+        "Test Line Chart",
+        "X", "Y",
+        None, True,
+        mock_context
+    )
+
+    assert isinstance(result, dict)
+    content = result["content"][0]
+    assert content["type"] == "image"
+    assert content["annotations"]["chart_type"] == "line"
+    assert content["annotations"]["data_points"] == 4
+
+
+@pytest.mark.asyncio
+async def test_plot_scatter_chart_basic(mock_context):
+    """Test plot_scatter_chart tool."""
+    try:
+        import matplotlib
+    except ImportError:
+        pytest.skip("matplotlib not available")
+
+    from math_mcp.server import plot_scatter_chart
+
+    result = await plot_scatter_chart.fn(
+        [1.0, 2.0, 3.0],
+        [2.0, 4.0, 6.0],
+        "Test Scatter",
+        "X", "Y",
+        "purple", 50,
+        mock_context
+    )
+
+    assert isinstance(result, dict)
+    content = result["content"][0]
+    assert content["type"] == "image"
+    assert content["annotations"]["chart_type"] == "scatter"
+
+
+@pytest.mark.asyncio
+async def test_plot_box_plot_basic(mock_context):
+    """Test plot_box_plot tool."""
+    try:
+        import matplotlib
+    except ImportError:
+        pytest.skip("matplotlib not available")
+
+    from math_mcp.server import plot_box_plot
+
+    result = await plot_box_plot.fn(
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+        ["Group A", "Group B"],
+        "Test Box Plot",
+        "Values",
+        None,
+        mock_context
+    )
+
+    assert isinstance(result, dict)
+    content = result["content"][0]
+    assert content["type"] == "image"
+    assert content["annotations"]["chart_type"] == "box_plot"
+    assert content["annotations"]["groups"] == 2
+
+
+@pytest.mark.asyncio
+async def test_plot_financial_line_basic(mock_context):
+    """Test plot_financial_line tool."""
+    try:
+        import matplotlib
+    except ImportError:
+        pytest.skip("matplotlib not available")
+
+    from math_mcp.server import plot_financial_line
+
+    result = await plot_financial_line.fn(
+        30, "bullish", 100.0, None, mock_context
+    )
+
+    assert isinstance(result, dict)
+    content = result["content"][0]
+    assert content["type"] == "image"
+    assert content["annotations"]["chart_type"] == "financial_line"
+    assert content["annotations"]["days"] == 30
+    assert content["annotations"]["trend"] == "bullish"
+    assert "volatility" in content["annotations"]
+
+
+@pytest.mark.asyncio
+async def test_plot_line_chart_error_mismatched_length(mock_context):
+    """Test plot_line_chart with mismatched data lengths."""
+    try:
+        import matplotlib
+    except ImportError:
+        pytest.skip("matplotlib not available")
+
+    from math_mcp.server import plot_line_chart
+
+    result = await plot_line_chart.fn(
+        [1.0, 2.0],
+        [1.0],
+        "Test", "X", "Y", None, True, mock_context
+    )
+
+    assert isinstance(result, dict)
+    content = result["content"][0]
+    assert content["type"] == "text"
+    assert "same length" in content["text"]
+
+
+@pytest.mark.asyncio
+async def test_plot_financial_line_invalid_trend(mock_context):
+    """Test plot_financial_line with invalid trend."""
+    try:
+        import matplotlib
+    except ImportError:
+        pytest.skip("matplotlib not available")
+
+    from math_mcp.server import plot_financial_line
+
+    result = await plot_financial_line.fn(
+        30, "invalid_trend", 100.0, None, mock_context
+    )
+
+    assert isinstance(result, dict)
+    content = result["content"][0]
+    assert content["type"] == "text"
+    assert "Financial Chart Error" in content["text"]
 
 
 if __name__ == "__main__":
