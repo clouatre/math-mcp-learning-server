@@ -16,8 +16,8 @@ from typing import Any
 from pydantic import BaseModel, Field
 from fastmcp import FastMCP, Context
 
-# Import visualization functions
-from . import visualization
+# Import visualization functions (using absolute import for FastMCP Cloud compatibility)
+from math_mcp import visualization
 
 
 # === PYDANTIC MODELS FOR STRUCTURED OUTPUT ===
